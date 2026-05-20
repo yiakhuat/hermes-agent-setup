@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent — MCP Tools Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161e;
+    --bg3: #1a1d27;
+    --border: #252836;
+    --accent: #7c6af7;
+    --accent2: #4fc3c3;
+    --accent3: #f7c26a;
+    --text: #e2e4ef;
+    --text-muted: #7b7f9e;
+    --text-dim: #4a4d63;
+    --green: #4fd1a0;
+    --red: #f76a6a;
+    --code-bg: #0a0c10;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,106,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,195,195,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,106,247,0.12);
+    border: 1px solid rgba(124,106,247,0.3);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-bottom: 28px;
+  }
+
+  .badge::before { content: '◈'; }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .meta-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1100px;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 40px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 24px;
+    margin-bottom: 12px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 8px 24px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: rgba(124,106,247,0.05);
+  }
+
+  .nav-item.sub {
+    padding-left: 36px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    padding: 60px 56px;
+    max-width: 800px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 72px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 11px;
+    margin: 32px 0 12px;
+  }
+
+  p { margin-bottom: 16px; color: var(--text-muted); font-size: 15px; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 24px 0; border-radius: 8px; border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+
+  th {
+    background: var(--bg3);
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  td code, th code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--accent3);
+  }
+
+  td:first-child { color: var(--text); font-weight: 400; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .copy-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { color: var(--accent); background: rgba(124,106,247,0.1); }
+
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-muted);
+  }
+
+  .kw { color: var(--accent); }
+  .str { color: var(--green); }
+  .cm { color: var(--text-dim); font-style: italic; }
+  .num { color: var(--accent3); }
+  .key { color: var(--accent2); }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: var(--accent); }
+
+  .card-icon { font-size: 24px; margin-bottom: 12px; }
+
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .card-desc { font-size: 13px; color: var(--text-muted); }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .callout.info {
+    background: rgba(79,195,195,0.07);
+    border: 1px solid rgba(79,195,195,0.2);
+    color: var(--accent2);
+  }
+
+  .callout.warn {
+    background: rgba(247,194,106,0.07);
+    border: 1px solid rgba(247,194,106,0.2);
+    color: var(--accent3);
+  }
+
+  .callout.danger {
+    background: rgba(247,106,106,0.07);
+    border: 1px solid rgba(247,106,106,0.2);
+    color: var(--red);
+  }
+
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+  .callout p { color: inherit; margin: 0; }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    margin: 24px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-muted);
+    overflow-x: auto;
+  }
+
+  /* ── SAMPLE OUTPUT ── */
+  .output {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+
+  .output .emoji { color: var(--text); }
+  .output .title { color: var(--accent3); font-weight: 500; }
+  .output .company { color: var(--accent2); }
+  .output .salary { color: var(--green); }
+  .output .divider { color: var(--text-dim); }
+
+  /* ── STATUS PILLS ── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .pill.green {
+    background: rgba(79,209,160,0.12);
+    color: var(--green);
+    border: 1px solid rgba(79,209,160,0.25);
+  }
+
+  .pill.purple {
+    background: rgba(124,106,247,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.25);
+  }
+
+  .pill::before { content: '●'; font-size: 8px; }
+
+  /* ── DIVIDER ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  footer span { color: var(--accent); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .content { padding: 32px 24px; }
+    .hero { padding: 48px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="badge">Technical Documentation</div>
+    <h1>Hermes <span>Agent</span><br>MCP Tools Setup</h1>
+    <p style="color: var(--text-muted); font-size: 16px; max-width: 560px; margin-top: 16px;">
+      A complete guide to deploying iCloud Calendar and Job Scout MCP tools on a self-hosted Hermes Agent instance running on Hetzner VPS.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-item"><div class="dot"></div>Hermes Agent v0.12.0</div>
+      <div class="meta-item"><div class="dot" style="background:var(--accent3)"></div>Hetzner VPS · Ubuntu 24.04</div>
+      <div class="meta-item"><div class="dot" style="background:var(--green)"></div>May 2026</div>
+      <div class="meta-item"><div class="dot" style="background:var(--red)"></div>Author: Victor</div>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Contents</div>
+    <a class="nav-item" href="#overview">1. Project Overview</a>
+    <a class="nav-item" href="#infrastructure">2. Infrastructure</a>
+    <a class="nav-item" href="#prerequisites">3. Prerequisites</a>
+    <a class="nav-item" href="#icloud">4. iCloud Calendar MCP</a>
+    <a class="nav-item sub" href="#icloud-how">How It Works</a>
+    <a class="nav-item sub" href="#icloud-config">Configuration</a>
+    <a class="nav-item" href="#jobscout">5. Job Scout MCP</a>
+    <a class="nav-item sub" href="#jobscout-arch">Architecture</a>
+    <a class="nav-item sub" href="#jobscout-config">Configuration</a>
+    <a class="nav-item sub" href="#jobscout-output">Sample Output</a>
+    <a class="nav-item" href="#registering">6. Registering Tools</a>
+    <a class="nav-item" href="#personalities">7. Personalities</a>
+    <a class="nav-item" href="#profile">8. Job Profile</a>
+    <a class="nav-item" href="#usage">9. Usage Guide</a>
+    <a class="nav-item" href="#troubleshooting">10. Troubleshooting</a>
+    <a class="nav-item" href="#files">11. File Structure</a>
+    <a class="nav-item" href="#keys">12. API Keys</a>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- 1. OVERVIEW -->
+    <section class="section" id="overview">
+      <div class="section-number">01 — OVERVIEW</div>
+      <h2>Project Overview</h2>
+      <p>This project extends a self-hosted Hermes Agent instance with two custom MCP (Model Context Protocol) tools that run as persistent stdio servers on the VPS.</p>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">📅</div>
+          <div class="card-title">icloud-calendar</div>
+          <div class="card-desc">Read, create and update iCloud calendar events via Apple's CalDAV API.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <div class="card-title">job-scout</div>
+          <div class="card-desc">Search job boards, filter by saved preferences, and return a clean ranked digest.</div>
+        </div>
+      </div>
+
+      <p>Both tools are registered permanently in Hermes' <code>config.yaml</code> and survive restarts and new sessions. The Job Scout tool additionally stores user preferences in a local JSON file — set once, remembered forever.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th>Status</th><th>Python Source</th></tr></thead>
+          <tbody>
+            <tr><td>icloud-calendar</td><td><span class="pill green">All tools enabled</span></td><td><code>/root/icloud_calendar_mcp.py</code></td></tr>
+            <tr><td>job-scout</td><td><span class="pill green">All tools enabled</span></td><td><code>/root/job_scout_mcp.py</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 2. INFRASTRUCTURE -->
+    <section class="section" id="infrastructure">
+      <div class="section-number">02 — INFRASTRUCTURE</div>
+      <h2>Infrastructure</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th>Details</th></tr></thead>
+          <tbody>
+            <tr><td>Server</td><td>Hetzner VPS — Ubuntu 24.04 (8GB RAM)</td></tr>
+            <tr><td>Hostname</td><td><code>ubuntu-8gb-nbg1-1</code></td></tr>
+            <tr><td>Hermes Version</td><td>v0.12.0 (2026.4.30)</td></tr>
+            <tr><td>Python (Hermes venv)</td><td><code>/root/hermes-venv/bin/python3</code></td></tr>
+            <tr><td>Hermes Config</td><td><code>~/.hermes/config.yaml</code></td></tr>
+            <tr><td>Hermes Logs</td><td><code>~/.hermes/logs/</code></td></tr>
+            <tr><td>MCP Scripts</td><td><code>/root/</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 3. PREREQUISITES -->
+    <section class="section" id="prerequisites">
+      <div class="section-number">03 — PREREQUISITES</div>
+      <h2>Prerequisites</h2>
+
+      <h3>System Packages</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>apt install python3-full python3-venv -y</pre>
+      </div>
+
+      <h3>Python Dependencies</h3>
+      <p>MCP tools run inside the Hermes virtual environment. Install required packages there:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>/root/hermes-venv/bin/python3 -m pip install requests</pre>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <p>The <code>mcp</code> package is already bundled with Hermes Agent and does not need to be installed separately.</p>
+      </div>
+
+      <h3>Verify Installation</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>/root/hermes-venv/bin/python3 -c <span class="str">"import mcp; print('mcp OK')"</span>
+/root/hermes-venv/bin/python3 -c <span class="str">"import requests; print('requests OK')"</span></pre>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 4. ICLOUD -->
+    <section class="section" id="icloud">
+      <div class="section-number">04 — ICLOUD CALENDAR MCP</div>
+      <h2>iCloud Calendar MCP Tool</h2>
+      <p>Connects to Apple's CalDAV API and exposes calendar management capabilities to Hermes.</p>
+
+      <div id="icloud-how">
+        <h3>MCP Tools Exposed</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tool Name</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>mcp_icloud_calendar_list_events</code></td><td>List upcoming events by date range and calendar name</td></tr>
+              <tr><td><code>mcp_icloud_calendar_create_event</code></td><td>Create a new event in any iCloud calendar</td></tr>
+              <tr><td><code>mcp_icloud_calendar_update_event</code></td><td>Modify an existing event by UID</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="icloud-config">
+        <h3>Configuration in config.yaml</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">yaml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="key">mcp_servers</span>:
+  <span class="key">icloud-calendar</span>:
+    <span class="key">command</span>: <span class="str">/root/hermes-venv/bin/python3</span>
+    <span class="key">args</span>:
+    - <span class="str">/root/icloud_calendar_mcp.py</span>
+    <span class="key">timeout</span>: <span class="num">60</span>
+    <span class="key">connect_timeout</span>: <span class="num">60</span>
+    <span class="key">env</span>:
+      <span class="key">ICLOUD_EMAIL</span>: <span class="str">your@icloud.com</span>
+      <span class="key">ICLOUD_PASSWORD</span>: <span class="str">your-app-specific-password</span></pre>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠</span>
+          <p>Use an <strong>App-Specific Password</strong> from appleid.apple.com — not your regular iCloud password. Go to Security → App-Specific Passwords.</p>
+        </div>
+      </div>
+
+      <h3>Example Usage in Hermes</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">prompt</span></div>
+        <pre>What's on my Family calendar this week?
+Create a meeting called "Team Sync" on May 10 from 9am to 10am in my Work calendar
+Update the Coffee with Karin event to May 13</pre>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 5. JOB SCOUT -->
+    <section class="section" id="jobscout">
+      <div class="section-number">05 — JOB SCOUT MCP</div>
+      <h2>Job Scout MCP Tool</h2>
+      <p>Searches multiple job boards, filters against saved preferences, deduplicates across sources, and returns a clean ranked digest. Preferences persist to disk — set once, remembered forever.</p>
+
+      <div id="jobscout-arch">
+        <h3>Architecture</h3>
+        <div class="arch">User asks Hermes → Hermes calls MCP tool → job_scout_mcp.py
+                                                        ↓
+                                             Load job_profile.json
+                                                        ↓
+                                ┌───────────────────────┴────────────────────────┐
+                                ↓                                                 ↓
+                          Adzuna API                                       JSearch API
+                          (250 req/mo free)                             (200 req/mo free)
+                                ↓                                                 ↓
+                                └───────────────────────┬────────────────────────┘
+                                                        ↓
+                                             Filter → Rank → Deduplicate
+                                                        ↓
+                                             Save to seen_jobs.json
+                                                        ↓
+                                             Return clean digest to Hermes</div>
+      </div>
+
+      <h3>Persistent Storage Files</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>job_profile.json</code></td><td>Saved user preferences — loaded on every search</td></tr>
+            <tr><td><code>seen_jobs.json</code></td><td>Deduplication cache — prevents showing same job twice</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Job Profile Schema</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>{
+  <span class="key">"job_titles"</span>: [<span class="str">"Senior Technical Program Manager"</span>, <span class="str">"Staff TPM"</span>],
+  <span class="key">"keywords"</span>: [<span class="str">"TPM"</span>, <span class="str">"technical program manager"</span>],
+  <span class="key">"locations"</span>: [<span class="str">"Remote"</span>, <span class="str">"San Francisco"</span>],
+  <span class="key">"remote_only"</span>: <span class="kw">true</span>,
+  <span class="key">"min_salary"</span>: <span class="num">160000</span>,
+  <span class="key">"experience_level"</span>: <span class="str">"senior"</span>,
+  <span class="key">"exclude_companies"</span>: [],
+  <span class="key">"preferred_industries"</span>: [<span class="str">"fintech"</span>, <span class="str">"infrastructure"</span>],
+  <span class="key">"country"</span>: <span class="str">"us"</span>,
+  <span class="key">"max_days_old"</span>: <span class="num">7</span>
+}</pre>
+      </div>
+
+      <h3>Data Sources</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Source</th><th>Free Tier</th><th>Sign Up</th></tr></thead>
+          <tbody>
+            <tr><td>Adzuna</td><td>250 req/month</td><td>developer.adzuna.com</td></tr>
+            <tr><td>JSearch (RapidAPI)</td><td>200 req/month</td><td>rapidapi.com</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>MCP Tools Exposed</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool Name</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>mcp_job_scout_search_jobs</code></td><td>Search jobs using saved profile</td></tr>
+            <tr><td><code>mcp_job_scout_update_job_profile</code></td><td>Save/update preferences permanently</td></tr>
+            <tr><td><code>mcp_job_scout_show_job_profile</code></td><td>Display current saved preferences</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="jobscout-config">
+        <h3>Configuration in config.yaml</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">yaml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre>  <span class="key">job-scout</span>:
+    <span class="key">command</span>: <span class="str">/root/hermes-venv/bin/python3</span>
+    <span class="key">args</span>:
+    - <span class="str">/root/job_scout_mcp.py</span>
+    <span class="key">timeout</span>: <span class="num">60</span>
+    <span class="key">connect_timeout</span>: <span class="num">60</span>
+    <span class="key">env</span>:
+      <span class="key">ADZUNA_APP_ID</span>: <span class="str">your_adzuna_app_id</span>
+      <span class="key">ADZUNA_APP_KEY</span>: <span class="str">your_adzuna_app_key</span>
+      <span class="key">RAPIDAPI_KEY</span>: <span class="str">your_rapidapi_key</span></pre>
+        </div>
+      </div>
+
+      <div id="jobscout-output">
+        <h3>Sample Output</h3>
+        <div class="output">
+<span class="emoji">🎯</span> <span class="title">Job Scout Digest — May 05, 2026</span>
+
+Found <span class="salary">5</span> matching role(s):
+
+<span class="divider">────────────────────────────────────────────────</span>
+<span class="title">1. Senior Technical Program Manager</span> @ <span class="company">Stripe</span>
+   📍 Remote
+   💰 <span class="salary">$180,000 – $220,000</span>
+   📅 2026-05-03  |  🔗 https://stripe.com/jobs/...
+   📝 We are looking for a Senior TPM to lead cross-functional...
+
+<span class="divider">────────────────────────────────────────────────</span>
+<span class="title">2. Staff TPM, Infrastructure</span> @ <span class="company">Figma</span>
+   📍 Remote / San Francisco
+   💰 <span class="salary">$200,000+</span>
+   📅 2026-05-04  |  🔗 https://figma.com/careers/...
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 6. REGISTERING -->
+    <section class="section" id="registering">
+      <div class="section-number">06 — REGISTERING TOOLS</div>
+      <h2>Registering MCP Tools with Hermes</h2>
+
+      <h3>Step 1 — Edit config.yaml</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>nano ~/.hermes/config.yaml</pre>
+      </div>
+      <p>Append both MCP server entries at the bottom under the <code>mcp_servers:</code> key.</p>
+
+      <h3>Step 2 — Restart Hermes Gateway</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>systemctl --user restart hermes-gateway</pre>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠</span>
+        <p>Always restart the gateway after any <code>config.yaml</code> change for tools to reload.</p>
+      </div>
+
+      <h3>Step 3 — Verify Registration</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>hermes tools list</pre>
+      </div>
+      <p>Expected output under MCP servers:</p>
+      <div class="output">MCP servers:
+  icloud-calendar  all tools enabled
+  job-scout        all tools enabled</div>
+    </section>
+
+    <hr>
+
+    <!-- 7. PERSONALITIES -->
+    <section class="section" id="personalities">
+      <div class="section-number">07 — PERSONALITIES</div>
+      <h2>Hermes Personalities</h2>
+      <p>Personalities allow Hermes to switch roles and behave differently depending on the task. Activated with <code>/personality &lt;name&gt;</code> inside chat.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">yaml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">personalities</span>:
+  <span class="key">job-scout</span>:
+    <span class="key">prompt</span>: <span class="str">"You are a job search specialist. Always use the job-scout MCP tool."</span>
+  <span class="key">calendar-assistant</span>:
+    <span class="key">prompt</span>: <span class="str">"You are a calendar assistant. Always use icloud-calendar tools."</span>
+  <span class="key">tech-writer</span>:
+    <span class="key">prompt</span>: <span class="str">"You are a professional technical writer. Write clear Markdown documentation."</span>
+  <span class="key">doc-reviewer</span>:
+    <span class="key">prompt</span>: <span class="str">"You are a strict technical documentation reviewer. Check clarity and accuracy."</span></pre>
+      </div>
+
+      <h3>Switching Personalities</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">prompt</span></div>
+        <pre>/personality job-scout
+/personality calendar-assistant
+/personality tech-writer</pre>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 8. PROFILE -->
+    <section class="section" id="profile">
+      <div class="section-number">08 — JOB PROFILE</div>
+      <h2>Job Search Profile — Persistent Preferences</h2>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <p>Preferences are saved to <code>job_profile.json</code> on disk. They survive restarts, new sessions, and server reboots. You only need to set them once.</p>
+      </div>
+
+      <h3>Setting Preferences</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">prompt</span></div>
+        <pre>Remember that I'm looking for Senior Technical Program Manager or
+Staff TPM roles. Remote only, US-based. Minimum $160k salary.
+Prefer fintech or infrastructure companies.</pre>
+      </div>
+
+      <h3>Useful Commands</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td>Show my job search profile</td><td>Displays saved preferences</td></tr>
+            <tr><td>Find me TPM jobs</td><td>Searches using saved profile</td></tr>
+            <tr><td>Only show remote jobs above $140k</td><td>Updates preferences</td></tr>
+            <tr><td>Show jobs including ones I've seen</td><td>Ignores dedup cache</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Resetting the Cache</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>rm ~/hermes/tools/job_scout/seen_jobs.json</pre>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 9. USAGE -->
+    <section class="section" id="usage">
+      <div class="section-number">09 — USAGE GUIDE</div>
+      <h2>Usage Guide</h2>
+
+      <h3>Calendar Commands</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Say to Hermes</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>What's on my Family calendar this week?</td><td>Lists events for next 7 days</td></tr>
+            <tr><td>What's on my calendar for June 2?</td><td>Lists events for a specific date</td></tr>
+            <tr><td>Create a meeting called Team Sync on May 10 from 9am to 10am</td><td>Creates a new event</td></tr>
+            <tr><td>Update the Coffee with Karin event to May 13</td><td>Updates an existing event</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Job Search Commands</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Say to Hermes</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>Find me TPM jobs</td><td>Searches using saved profile</td></tr>
+            <tr><td>Find me Localization Manager jobs</td><td>Searches for a specific role</td></tr>
+            <tr><td>Remember I only want remote jobs above $140k</td><td>Updates saved preferences</td></tr>
+            <tr><td>Show my job search profile</td><td>Displays current preferences</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 10. TROUBLESHOOTING -->
+    <section class="section" id="troubleshooting">
+      <div class="section-number">10 — TROUBLESHOOTING</div>
+      <h2>Troubleshooting</h2>
+
+      <h3>Check MCP Error Log</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre>tail -30 ~/.hermes/logs/mcp-stderr.log</pre>
+      </div>
+
+      <h3>Common Errors</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Error</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>No module named 'requests'</code></td><td><code>/root/hermes-venv/bin/python3 -m pip install requests</code></td></tr>
+            <tr><td><code>No module named 'mcp'</code></td><td><code>/root/hermes-venv/bin/python3 -m pip install mcp</code></td></tr>
+            <tr><td><code>AuthorizationError</code> (iCloud)</td><td>Regenerate App-Specific Password at appleid.apple.com</td></tr>
+            <tr><td>No jobs returned</td><td>Check API keys are correctly set in <code>config.yaml</code></td></tr>
+            <tr><td>Tool shows as "failed"</td><td>Restart gateway: <code>systemctl --user restart hermes-gateway</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <span class="callout-icon">!</span>
+        <p>Always restart the Hermes gateway after any fix: <code>systemctl --user restart hermes-gateway</code></p>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 11. FILES -->
+    <section class="section" id="files">
+      <div class="section-number">11 — FILE STRUCTURE</div>
+      <h2>File Structure Reference</h2>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">tree</span></div>
+        <pre><span class="kw">/root/</span>
+├── icloud_calendar_mcp.py        <span class="cm"># iCloud Calendar MCP server</span>
+├── job_scout_mcp.py              <span class="cm"># Job Scout MCP server</span>
+├── hermes-venv/                  <span class="cm"># Python venv used by MCP tools</span>
+│   └── bin/python3
+└── hermes/
+    └── tools/
+        └── job_scout/
+            ├── job_profile.json  <span class="cm"># Persistent job preferences</span>
+            └── seen_jobs.json    <span class="cm"># Deduplication cache</span>
+
+<span class="kw">~/.hermes/</span>
+├── config.yaml                   <span class="cm"># Main Hermes configuration</span>
+├── logs/
+│   ├── agent.log                 <span class="cm"># Agent activity log</span>
+│   ├── mcp-stderr.log            <span class="cm"># MCP server error log</span>
+│   └── errors.log
+└── skills/                       <span class="cm"># Hermes skills library</span></pre>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 12. KEYS -->
+    <section class="section" id="keys">
+      <div class="section-number">12 — API KEYS</div>
+      <h2>API Keys Reference</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Where to Get</th><th>Environment Variable</th></tr></thead>
+          <tbody>
+            <tr><td>Adzuna App ID</td><td>developer.adzuna.com</td><td><code>ADZUNA_APP_ID</code></td></tr>
+            <tr><td>Adzuna App Key</td><td>developer.adzuna.com</td><td><code>ADZUNA_APP_KEY</code></td></tr>
+            <tr><td>RapidAPI Key</td><td>rapidapi.com/jsearch</td><td><code>RAPIDAPI_KEY</code></td></tr>
+            <tr><td>iCloud App Password</td><td>appleid.apple.com → Security</td><td><code>ICLOUD_PASSWORD</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <p>All keys are stored securely in <code>~/.hermes/config.yaml</code> under each MCP server's <code>env:</code> block and are never exposed in logs or chat output.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <p>Generated with <span>Hermes Agent</span> · tech-writer + doc-reviewer personalities · May 2026</p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
