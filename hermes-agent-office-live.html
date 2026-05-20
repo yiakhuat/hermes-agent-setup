@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent Office — Victor</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff41;
+    --amber: #ffb000;
+    --red: #ff4444;
+    --blue: #4fc3f7;
+    --purple: #b39ddb;
+    --dark: #0a0e14;
+    --panel: #111820;
+    --border: #1e3a2f;
+    --text: #c8ffd4;
+    --dim: #4a7a5a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--dark);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  .office { max-width: 960px; margin: 0 auto; }
+  .scanlines {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none; z-index: 0;
+  }
+  .title-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 10px; margin-bottom: 16px;
+  }
+  .title-bar h1 { font-size: 11px; color: var(--green); letter-spacing: 2px; }
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .live-dot { width: 10px; height: 10px; background: var(--green); display: inline-block; margin-right: 8px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .panel {
+    background: var(--panel); border: 2px solid var(--border);
+    border-radius: 2px; padding: 10px; position: relative; overflow: hidden;
+  }
+  .panel-title {
+    font-size: 7px; color: var(--dim); letter-spacing: 1px;
+    margin-bottom: 8px; border-bottom: 1px solid var(--border);
+    padding-bottom: 5px; text-transform: uppercase;
+  }
+  .panel.green  { border-color: var(--green); }
+  .panel.blue   { border-color: var(--blue); }
+  .panel.amber  { border-color: var(--amber); }
+  .panel.purple { border-color: var(--purple); }
+  .panel.red    { border-color: var(--red); }
+  .corner { position: absolute; width: 8px; height: 8px; }
+  .corner.tl { top:3px; left:3px; }
+  .corner.tr { top:3px; right:3px; }
+  .corner.bl { bottom:3px; left:3px; }
+  .corner.br { bottom:3px; right:3px; }
+  .c-green .corner { border-color: var(--green); }
+  .c-blue  .corner { border-color: var(--blue); }
+  .c-purple .corner { border-color: var(--purple); }
+  .tl { border-top: 2px solid; border-left: 2px solid; }
+  .tr { border-top: 2px solid; border-right: 2px solid; }
+  .bl { border-bottom: 2px solid; border-left: 2px solid; }
+  .br { border-bottom: 2px solid; border-right: 2px solid; }
+  .agent-scene {
+    display: flex; justify-content: center; align-items: flex-end;
+    height: 72px; overflow: hidden;
+  }
+  canvas.agent-canvas { image-rendering: pixelated; }
+  .status-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 0; border-bottom: 1px solid #0d1f17; font-size: 7px;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .badge { font-size: 6px; padding: 2px 6px; border-radius: 2px; }
+  .badge.ok      { background:#0d3320; color:var(--green); border:1px solid var(--green); }
+  .badge.active  { background:#1a2d0d; color:#80ff40; border:1px solid #80ff40; animation:pulse 2s infinite; }
+  .badge.failed  { background:#2d0d0d; color:var(--red); border:1px solid var(--red); }
+  .badge.unknown { background:#1a1a0d; color:var(--dim); border:1px solid var(--dim); }
+  .badge.online  { background:#0d3320; color:var(--green); border:1px solid var(--green); }
+  .badge.offline { background:#2d0d0d; color:var(--red); border:1px solid var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .prog-row { margin: 5px 0; }
+  .prog-label { font-size: 6px; color: var(--dim); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .prog-track { height: 8px; background: #0d1f17; border: 1px solid var(--border); border-radius: 1px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 1px; transition: width 1.5s ease; }
+  .prog-fill.green  { background: var(--green); }
+  .prog-fill.amber  { background: var(--amber); }
+  .prog-fill.blue   { background: var(--blue); }
+  .prog-fill.purple { background: var(--purple); }
+  .ticker { overflow: hidden; height: 18px; border: 1px solid var(--border); background: #0a1210; }
+  .ticker-text {
+    white-space: nowrap; font-size: 7px; color: var(--green);
+    display: inline-block; padding-left: 100%;
+    animation: scroll 30s linear infinite;
+  }
+  @keyframes scroll { to { transform: translateX(-200%); } }
+  .log-line { font-size: 6px; padding: 3px 0; border-bottom: 1px solid #0d1f17; display: flex; gap: 8px; }
+  .log-time     { color: var(--dim); min-width: 42px; flex-shrink: 0; }
+  .log-msg      { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-msg.ok   { color: var(--green); }
+  .log-msg.warn { color: var(--amber); }
+  .log-msg.info { color: var(--blue); }
+  .cron-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #0d1f17; font-size: 6px; }
+  .cron-next { color: var(--blue); }
+  .job-tag {
+    display: inline-block; padding: 2px 6px; margin: 2px;
+    border: 1px solid var(--green); border-radius: 2px;
+    font-size: 6px; color: var(--green);
+  }
+  .bottom-bar {
+    border-top: 2px solid var(--border); padding-top: 8px; margin-top: 4px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 6px; color: var(--dim); flex-wrap: wrap; gap: 6px;
+  }
+  .sys-stats { display: flex; gap: 16px; }
+  .stat-val { color: var(--green); }
+  .api-status { font-size: 6px; text-align: right; }
+  .api-ok   { color: var(--green); }
+  .api-err  { color: var(--red); }
+  .refresh-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px; background: #0d1f17;
+    border: 1px solid var(--green); color: var(--green);
+    padding: 4px 8px; cursor: pointer; border-radius: 2px;
+  }
+  .refresh-btn:hover { background: #1a3a2a; }
+  @media (max-width: 600px) {
+    .grid3 { grid-template-columns: 1fr; }
+    .grid2 { grid-template-columns: 1fr; }
+    body { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="office">
+
+  <div class="title-bar">
+    <div>
+      <span class="live-dot blink"></span>
+      <span style="color:var(--dim);font-size:7px;">VICTOR /</span>
+      <h1 style="display:inline;margin-left:8px;">HERMES AGENT OFFICE</h1>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:10px;color:var(--green);" id="clock">--:--:--</div>
+      <div style="font-size:6px;color:var(--dim);" id="date">--</div>
+      <div class="api-status" id="api-status">connecting...</div>
+    </div>
+  </div>
+
+  <!-- AGENTS -->
+  <div class="grid3">
+    <div class="panel green c-green">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="panel-title">job-scout agent</div>
+      <div class="agent-scene">
+        <canvas id="c-jobscout" class="agent-canvas" width="40" height="56"></canvas>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="status-row"><span>status</span><span class="badge" id="js-status">--</span></div>
+        <div class="status-row"><span>titles</span><span style="color:var(--blue);font-size:6px;" id="js-titles">--</span></div>
+        <div class="status-row"><span>min salary</span><span style="color:var(--amber);" id="js-salary">--</span></div>
+        <div class="status-row"><span>seen jobs</span><span style="color:var(--green);" id="js-seen">--</span></div>
+        <div class="status-row"><span>remote only</span><span style="color:var(--dim);" id="js-remote">--</span></div>
+      </div>
+    </div>
+
+    <div class="panel blue c-blue">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="panel-title">icloud calendar</div>
+      <div class="agent-scene">
+        <canvas id="c-calendar" class="agent-canvas" width="40" height="56"></canvas>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="status-row"><span>status</span><span class="badge" id="cal-status">--</span></div>
+        <div class="status-row"><span>type</span><span style="color:var(--blue)">caldav</span></div>
+        <div class="status-row"><span>provider</span><span style="color:var(--dim)">icloud.com</span></div>
+        <div class="status-row"><span>tools</span><span style="color:var(--green)">list/create/update</span></div>
+        <div class="status-row"><span>mode</span><span style="color:var(--dim)">on-demand</span></div>
+      </div>
+    </div>
+
+    <div class="panel purple c-purple">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="panel-title">hermes core</div>
+      <div class="agent-scene">
+        <canvas id="c-hermes" class="agent-canvas" width="40" height="56"></canvas>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="status-row"><span>gateway</span><span class="badge" id="gw-status">--</span></div>
+        <div class="status-row"><span>version</span><span style="color:var(--purple);" id="h-version">--</span></div>
+        <div class="status-row"><span>mcp servers</span><span style="color:var(--amber);" id="h-mcp">--</span></div>
+        <div class="status-row"><span>sessions</span><span style="color:var(--blue);" id="h-sessions">--</span></div>
+        <div class="status-row"><span>uptime</span><span style="color:var(--green);" id="h-uptime">--</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOURCES + LOG -->
+  <div class="grid2">
+    <div class="panel blue">
+      <div class="panel-title">system resources — hetzner vps · 188.34.202.40</div>
+      <div class="prog-row">
+        <div class="prog-label"><span>CPU</span><span id="cpu-val">--%</span></div>
+        <div class="prog-track"><div class="prog-fill green" id="cpu-bar" style="width:0%"></div></div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-label"><span>MEMORY</span><span id="mem-val">--%</span></div>
+        <div class="prog-track"><div class="prog-fill amber" id="mem-bar" style="width:0%"></div></div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-label"><span>DISK</span><span id="disk-val">--%</span></div>
+        <div class="prog-track"><div class="prog-fill blue" id="disk-bar" style="width:0%"></div></div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-label"><span>NETWORK</span><span id="net-val">--%</span></div>
+        <div class="prog-track"><div class="prog-fill purple" id="net-bar" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:8px; font-size:6px; color:var(--dim);">
+        last updated: <span id="last-update" style="color:var(--green);">--</span>
+        <button class="refresh-btn" style="float:right;" onclick="fetchData()">↺ refresh</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">activity log — live from hermes</div>
+      <div id="log-container" style="min-height:80px;">
+        <div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg info">connecting to api...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRON + JOB PROFILE -->
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-title">cron jobs</div>
+      <div id="cron-container">
+        <div class="cron-row"><span style="color:var(--dim)">loading...</span></div>
+      </div>
+    </div>
+
+    <div class="panel amber">
+      <div class="panel-title">job search profile</div>
+      <div style="font-size:6px; color:var(--dim); margin-bottom:4px;">target titles:</div>
+      <div id="job-titles-tags" style="margin-bottom:8px;"></div>
+      <div style="font-size:6px; color:var(--dim); margin-bottom:4px;">industries:</div>
+      <div id="job-industries-tags"></div>
+    </div>
+  </div>
+
+  <!-- PERSONALITIES -->
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-title">active personalities</div>
+    <div style="margin-top:4px;">
+      <span style="display:inline-block;padding:3px 8px;border:1px solid var(--green);border-radius:2px;font-size:6px;color:var(--green);margin:3px;">job-scout</span>
+      <span style="display:inline-block;padding:3px 8px;border:1px solid var(--blue);border-radius:2px;font-size:6px;color:var(--blue);margin:3px;">calendar-assistant</span>
+      <span style="display:inline-block;padding:3px 8px;border:1px solid var(--purple);border-radius:2px;font-size:6px;color:var(--purple);margin:3px;">tech-writer</span>
+      <span style="display:inline-block;padding:3px 8px;border:1px solid var(--amber);border-radius:2px;font-size:6px;color:var(--amber);margin:3px;">doc-reviewer</span>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div style="margin-bottom:12px;">
+    <div class="ticker">
+      <span class="ticker-text" id="ticker-text">
+        ● CONNECTING TO HERMES VPS... &nbsp;&nbsp;&nbsp;
+      </span>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="sys-stats">
+      <span>VPS: <span class="stat-val" id="b-vps">--</span></span>
+      <span>MCP: <span class="stat-val" id="b-mcp">--</span></span>
+      <span>SESSIONS: <span class="stat-val" id="b-sessions">--</span></span>
+      <span>UPTIME: <span class="stat-val" id="b-uptime">--</span></span>
+    </div>
+    <div style="color:var(--dim);">HERMES v0.12.0 · ubuntu-8gb-nbg1-1 · auto-refresh 30s</div>
+  </div>
+
+</div>
+
+<script>
+const API_URL = 'http://188.34.202.40:5000/api/status';
+const REFRESH_INTERVAL = 30000;
+
+function drawAgent(canvasId, color, type) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const px = 5;
+  ctx.clearRect(0, 0, c.width, c.height);
+  function rect(x, y, w, h, col) {
+    ctx.fillStyle = col;
+    ctx.fillRect(x*px, y*px, w*px, h*px);
+  }
+  if (type === 'scout') {
+    rect(3,0,2,1,'#ffb000'); rect(5,0,2,1,'#ffb000');
+    rect(2,1,6,1,color); rect(1,2,8,1,color);
+    rect(1,3,8,1,color); rect(1,3,2,1,'#fff'); rect(5,3,2,1,'#fff');
+    rect(1,4,8,1,color); rect(0,5,10,1,color); rect(0,6,10,2,color);
+    rect(1,8,2,3,'#2a6a3a'); rect(5,8,2,3,'#2a6a3a');
+    rect(0,10,2,2,'#2a6a3a'); rect(6,10,2,2,'#2a6a3a');
+  } else if (type === 'cal') {
+    rect(3,0,4,1,'#1a6a9a'); rect(3,0,1,1,'#fff'); rect(6,0,1,1,'#fff');
+    rect(2,1,8,1,color); rect(1,2,10,1,color);
+    rect(1,3,10,1,color); rect(2,3,2,1,'#fff'); rect(6,3,2,1,'#fff');
+    rect(1,4,10,1,color); rect(0,5,12,1,color); rect(0,6,12,2,color);
+    rect(1,8,2,3,'#1a5a7a'); rect(7,8,2,3,'#1a5a7a');
+    rect(0,10,2,2,'#1a5a7a'); rect(8,10,2,2,'#1a5a7a');
+  } else {
+    rect(4,0,4,1,'#7a5ab0');
+    rect(2,1,8,1,color); rect(1,2,10,1,color);
+    rect(1,3,10,1,color); rect(3,3,2,1,'#fff'); rect(7,3,2,1,'#fff');
+    rect(1,4,10,1,color); rect(0,5,12,1,color); rect(0,6,12,2,color);
+    rect(2,8,2,3,'#7a5ab0'); rect(8,8,2,3,'#7a5ab0');
+    rect(1,10,2,2,'#7a5ab0'); rect(9,10,2,2,'#7a5ab0');
+  }
+}
+drawAgent('c-jobscout', '#00cc33', 'scout');
+drawAgent('c-calendar', '#1a7a9a', 'cal');
+drawAgent('c-hermes',   '#6a4c9c', 'hermes');
+
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const el = document.getElementById('clock');
+  const de = document.getElementById('date');
+  if (el) el.textContent = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  if (de) de.textContent = now.toDateString().toUpperCase();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function setBadge(id, status) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const map = {
+    ok: 'OK', active: 'ACTIVE', failed: 'FAILED',
+    unknown: '?', online: 'ONLINE', offline: 'OFFLINE'
+  };
+  el.textContent = map[status] || status.toUpperCase();
+  el.className = 'badge ' + status;
+}
+
+function setBar(barId, valId, value, suffix='%') {
+  const bar = document.getElementById(barId);
+  const val = document.getElementById(valId);
+  if (bar) bar.style.width = Math.min(value, 100) + '%';
+  if (val) val.textContent = value + suffix;
+}
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function updateLogs(logs) {
+  const container = document.getElementById('log-container');
+  if (!container || !logs || !logs.length) return;
+  container.innerHTML = '';
+  logs.forEach(entry => {
+    const div = document.createElement('div');
+    div.className = 'log-line';
+    const t = entry.time ? entry.time.split('T').pop().split('.')[0] : '--:--:--';
+    div.innerHTML = `<span class="log-time">${t.substring(0,8)}</span><span class="log-msg ${entry.level}">${entry.msg}</span>`;
+    container.appendChild(div);
+  });
+}
+
+function updateCron(jobs) {
+  const container = document.getElementById('cron-container');
+  if (!container || !jobs) return;
+  container.innerHTML = '';
+  const colors = ['var(--green)','var(--blue)','var(--purple)','var(--amber)'];
+  jobs.forEach((job, i) => {
+    const div = document.createElement('div');
+    div.className = 'cron-row';
+    div.innerHTML = `
+      <span style="color:${colors[i%colors.length]}">${job.name}</span>
+      <span>${job.schedule}</span>
+      <span class="cron-next">${job.next_run}</span>`;
+    container.appendChild(div);
+  });
+}
+
+function updateJobTags(ids, titles, color) {
+  const container = document.getElementById(ids);
+  if (!container || !titles) return;
+  container.innerHTML = '';
+  titles.slice(0,4).forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'job-tag';
+    span.style.borderColor = color;
+    span.style.color = color;
+    span.textContent = t.length > 20 ? t.substring(0,18)+'...' : t;
+    container.appendChild(span);
+  });
+  if (!titles.length) container.innerHTML = '<span style="font-size:6px;color:var(--dim)">not set</span>';
+}
+
+function updateTicker(data) {
+  const el = document.getElementById('ticker-text');
+  if (!el || !data) return;
+  const sys = data.system;
+  const h = data.hermes;
+  el.textContent = [
+    `● JOB-SCOUT: ${data.agents.job_scout.status.toUpperCase()}`,
+    `● ICLOUD-CAL: ${data.agents.icloud_calendar.status.toUpperCase()}`,
+    `● GATEWAY: ${h.gateway.toUpperCase()}`,
+    `● CPU: ${sys.cpu}%`,
+    `● MEM: ${sys.memory}%`,
+    `● VPS: ${sys.ip}`,
+    `● UPTIME: ${sys.uptime}`,
+    `● MCP: ${h.mcp_ok}/${h.mcp_total} OK`,
+    `● SESSIONS: ${h.sessions}`,
+    `● SEEN JOBS: ${data.agents.job_scout.seen_jobs}`,
+  ].join('  \u00a0\u00a0\u00a0  ');
+}
+
+async function fetchData() {
+  const statusEl = document.getElementById('api-status');
+  try {
+    const res = await fetch(API_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    if (statusEl) { statusEl.textContent = 'live data ✓'; statusEl.className = 'api-status api-ok'; }
+
+    const sys = data.system;
+    const h   = data.hermes;
+    const js  = data.agents.job_scout;
+    const cal = data.agents.icloud_calendar;
+
+    setBar('cpu-bar',  'cpu-val',  sys.cpu);
+    setBar('mem-bar',  'mem-val',  sys.memory);
+    setBar('disk-bar', 'disk-val', sys.disk);
+    setBar('net-bar',  'net-val',  Math.min(sys.network, 100));
+
+    setBadge('js-status',  js.status === 'ok' ? 'active' : js.status);
+    setBadge('cal-status', cal.status === 'ok' ? 'ok' : cal.status);
+    setBadge('gw-status',  h.gateway);
+
+    setText('js-titles',   js.titles.length ? js.titles[0] : 'not set');
+    setText('js-salary',   js.min_salary ? '$' + js.min_salary.toLocaleString() : 'not set');
+    setText('js-seen',     js.seen_jobs + ' jobs');
+    setText('js-remote',   js.remote ? 'yes' : 'no');
+    setText('h-version',   'v' + h.version);
+    setText('h-mcp',       h.mcp_ok + '/' + h.mcp_total + ' ok');
+    setText('h-sessions',  h.sessions);
+    setText('h-uptime',    sys.uptime);
+
+    setText('b-vps',      'online');
+    setText('b-mcp',      h.mcp_ok + '/' + h.mcp_total);
+    setText('b-sessions', h.sessions);
+    setText('b-uptime',   sys.uptime);
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    setText('last-update', pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds()));
+
+    updateLogs(data.logs);
+    updateCron(data.cron_jobs);
+    updateJobTags('job-titles-tags', js.titles, 'var(--green)');
+    updateJobTags('job-industries-tags', js.industries, 'var(--amber)');
+    updateTicker(data);
+
+  } catch (err) {
+    if (statusEl) {
+      statusEl.textContent = 'api offline — start backend';
+      statusEl.className = 'api-status api-err';
+    }
+    console.error('API error:', err);
+  }
+}
+
+fetchData();
+setInterval(fetchData, REFRESH_INTERVAL);
+
+function animateAgents() {
+  ['c-jobscout','c-calendar','c-hermes'].forEach((id, i) => {
+    const c = document.getElementById(id);
+    if (c) c.style.transform = `translateY(${Math.sin(Date.now()/500 + i*1.8)*3}px)`;
+  });
+  requestAnimationFrame(animateAgents);
+}
+animateAgents();
+</script>
+</body>
+</html>
