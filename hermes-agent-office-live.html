@@ -7,52 +7,59 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 :root{
-  --g:#00ff41;--a:#ffb000;--r:#ff4444;--b:#4fc3f7;--p:#b39ddb;--pk:#ff69b4;--o:#ff8c00;
+  --g:#00ff41;--a:#ffb000;--r:#ff0000;--b:#4fc3f7;--p:#b39ddb;
+  --pk:#ff69b4;--o:#ff8c00;--teal:#00ffcc;--lime:#aaff00;--cyan:#00e5ff;
   --dk:#0a0e14;--pn:#111820;--br:#1e3a2f;--tx:#c8ffd4;--dm:#4a7a5a;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--dk);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--tx);min-height:100vh;padding:20px;line-height:1.6;}
-.wrap{max-width:1100px;margin:0 auto;}
+.wrap{max-width:1200px;margin:0 auto;}
 .scanlines{position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:0;}
 .hbar{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--g);padding-bottom:10px;margin-bottom:14px;}
 .htitle{font-size:11px;color:var(--g);letter-spacing:2px;}
 .blink{animation:blink 1s step-end infinite;}
 @keyframes blink{50%{opacity:0;}}
 .dot{width:10px;height:10px;background:var(--g);display:inline-block;margin-right:8px;}
-.agents-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px;}
-.agent-card{background:var(--pn);border:2px solid var(--br);border-radius:2px;padding:10px;position:relative;}
-.card-title{font-size:7px;color:var(--dm);letter-spacing:1px;margin-bottom:8px;border-bottom:1px solid var(--br);padding-bottom:5px;text-transform:uppercase;}
-.ghost-wrap{display:flex;justify-content:center;align-items:center;height:80px;}
-.status-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #0d1f17;font-size:7px;}
+.section-label{font-size:7px;color:var(--dm);letter-spacing:2px;text-transform:uppercase;margin:12px 0 8px;border-left:3px solid var(--g);padding-left:8px;}
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:12px;}
+.agent-card{background:var(--pn);border:2px solid var(--br);border-radius:2px;padding:8px;position:relative;transition:border-color 0.3s;}
+.agent-card:hover{border-color:var(--g);}
+.card-title{font-size:6px;color:var(--dm);letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid var(--br);padding-bottom:4px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ghost-wrap{display:flex;justify-content:center;align-items:center;height:70px;}
+.status-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #0d1f17;font-size:6px;}
 .status-row:last-child{border-bottom:none;}
-.badge{font-size:6px;padding:2px 6px;border-radius:2px;}
-.ok{background:#0d3320;color:var(--g);border:1px solid var(--g);}
-.active{background:#1a2d0d;color:#80ff40;border:1px solid #80ff40;animation:pulse 2s infinite;}
-.unknown{background:#1a1a0d;color:var(--dm);border:1px solid var(--dm);}
-.failed{background:#2d0d0d;color:var(--r);border:1px solid var(--r);}
+.badge{font-size:5px;padding:2px 5px;border-radius:2px;}
+.b-ok     {background:#0d3320;color:var(--g);border:1px solid var(--g);}
+.b-active {background:#1a2d0d;color:#80ff40;border:1px solid #80ff40;animation:pulse 2s infinite;}
+.b-ready  {background:#0d1a2d;color:var(--b);border:1px solid var(--b);}
+.b-failed {background:#2d0d0d;color:var(--r);border:1px solid var(--r);}
+.b-unknown{background:#1a1a0d;color:var(--dm);border:1px solid var(--dm);}
+.b-online {background:#0d3320;color:var(--g);border:1px solid var(--g);}
+.b-offline{background:#2d0d0d;color:var(--r);border:1px solid var(--r);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .panel{background:var(--pn);border:2px solid var(--br);border-radius:2px;padding:10px;}
 .panel-title{font-size:7px;color:var(--dm);letter-spacing:1px;margin-bottom:8px;border-bottom:1px solid var(--br);padding-bottom:5px;text-transform:uppercase;}
-.prog-row{margin:5px 0;}
-.prog-label{font-size:6px;color:var(--dm);margin-bottom:3px;display:flex;justify-content:space-between;}
-.prog-track{height:8px;background:#0d1f17;border:1px solid var(--br);border-radius:1px;overflow:hidden;}
+.prog-row{margin:4px 0;}
+.prog-label{font-size:6px;color:var(--dm);margin-bottom:2px;display:flex;justify-content:space-between;}
+.prog-track{height:7px;background:#0d1f17;border:1px solid var(--br);border-radius:1px;overflow:hidden;}
 .prog-fill{height:100%;border-radius:1px;transition:width 1.5s ease;}
 .pf-g{background:var(--g);}.pf-a{background:var(--a);}.pf-b{background:var(--b);}.pf-p{background:var(--p);}
-.log-line{font-size:6px;padding:3px 0;border-bottom:1px solid #0d1f17;display:flex;gap:8px;}
-.lt{color:var(--dm);min-width:42px;flex-shrink:0;}
+.log-line{font-size:6px;padding:2px 0;border-bottom:1px solid #0d1f17;display:flex;gap:6px;}
+.lt{color:var(--dm);min-width:44px;flex-shrink:0;}
 .lm{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .lm.ok{color:var(--g);}.lm.warn{color:var(--a);}.lm.info{color:var(--b);}
 .ticker{overflow:hidden;height:18px;border:1px solid var(--br);background:#0a1210;margin-bottom:12px;}
-.ticker-text{white-space:nowrap;font-size:7px;color:var(--g);display:inline-block;padding-left:100%;animation:scroll 30s linear infinite;}
+.ticker-text{white-space:nowrap;font-size:7px;color:var(--g);display:inline-block;padding-left:100%;animation:scroll 35s linear infinite;}
 @keyframes scroll{to{transform:translateX(-200%);}}
-.cron-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #0d1f17;font-size:6px;}
+.cron-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #0d1f17;font-size:6px;}
 .cron-next{color:var(--b);}
 .bbar{border-top:2px solid var(--br);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;font-size:6px;color:var(--dm);flex-wrap:wrap;gap:6px;}
 .sv{color:var(--g);}
 .api-ok{color:var(--g);font-size:6px;}.api-err{color:var(--r);font-size:6px;}
-.pers-tag{display:inline-block;padding:3px 8px;border-radius:2px;font-size:6px;margin:3px;}
-.refresh-btn{font-family:'Press Start 2P',monospace;font-size:6px;background:#0d1f17;border:1px solid var(--g);color:var(--g);padding:4px 8px;cursor:pointer;border-radius:2px;float:right;}
+.tag{display:inline-block;padding:2px 6px;border-radius:2px;font-size:5px;margin:2px;}
+.refresh-btn{font-family:'Press Start 2P',monospace;font-size:6px;background:#0d1f17;border:1px solid var(--g);color:var(--g);padding:3px 7px;cursor:pointer;border-radius:2px;float:right;}
+.count-badge{font-size:6px;color:var(--dm);margin-left:8px;}
 @media(max-width:600px){.grid2{grid-template-columns:1fr;}body{padding:10px;}}
 </style>
 </head>
@@ -73,59 +80,22 @@ body{background:var(--dk);font-family:'Press Start 2P',monospace;font-size:8px;c
     </div>
   </div>
 
-  <!-- AGENT CARDS — auto-expanding grid -->
-  <div class="agents-grid">
-    <div class="agent-card" style="border-color:var(--r);">
-      <div class="card-title">job-scout</div>
-      <div class="ghost-wrap"><canvas id="g-jobscout" width="64" height="72" style="image-rendering:pixelated;"></canvas></div>
-      <div class="status-row"><span>status</span><span class="badge" id="js-status">--</span></div>
-      <div class="status-row"><span>title</span><span style="color:var(--b);font-size:6px;" id="js-title">--</span></div>
-      <div class="status-row"><span>salary</span><span style="color:var(--a);" id="js-salary">--</span></div>
-      <div class="status-row"><span>seen jobs</span><span style="color:var(--g);" id="js-seen">--</span></div>
-    </div>
-    <div class="agent-card" style="border-color:var(--b);">
-      <div class="card-title">icloud-calendar</div>
-      <div class="ghost-wrap"><canvas id="g-calendar" width="64" height="72" style="image-rendering:pixelated;"></canvas></div>
-      <div class="status-row"><span>status</span><span class="badge" id="cal-status">--</span></div>
-      <div class="status-row"><span>type</span><span style="color:var(--b);">caldav</span></div>
-      <div class="status-row"><span>tools</span><span style="color:var(--g);font-size:6px;">list/create/update</span></div>
-      <div class="status-row"><span>mode</span><span style="color:var(--dm);">on-demand</span></div>
-    </div>
-    <div class="agent-card" style="border-color:var(--p);">
-      <div class="card-title">hermes-core</div>
-      <div class="ghost-wrap"><canvas id="g-hermes" width="64" height="72" style="image-rendering:pixelated;"></canvas></div>
-      <div class="status-row"><span>gateway</span><span class="badge" id="gw-status">--</span></div>
-      <div class="status-row"><span>version</span><span style="color:var(--p);" id="h-ver">--</span></div>
-      <div class="status-row"><span>mcp servers</span><span style="color:var(--a);" id="h-mcp">--</span></div>
-      <div class="status-row"><span>uptime</span><span style="color:var(--g);" id="h-up">--</span></div>
-    </div>
-    <div class="agent-card" style="border-color:var(--pk);opacity:0.65;">
-      <div class="card-title">web-researcher</div>
-      <div class="ghost-wrap"><canvas id="g-researcher" width="64" height="72" style="image-rendering:pixelated;"></canvas></div>
-      <div class="status-row"><span>status</span><span class="badge unknown">STANDBY</span></div>
-      <div class="status-row"><span>type</span><span style="color:var(--dm);">personality</span></div>
-      <div class="status-row"><span>tools</span><span style="color:var(--dm);">web search</span></div>
-      <div class="status-row"><span>mode</span><span style="color:var(--dm);">on-demand</span></div>
-    </div>
-    <div class="agent-card" style="border-color:var(--o);opacity:0.65;">
-      <div class="card-title">financial-advisor</div>
-      <div class="ghost-wrap"><canvas id="g-finance" width="64" height="72" style="image-rendering:pixelated;"></canvas></div>
-      <div class="status-row"><span>status</span><span class="badge unknown">STANDBY</span></div>
-      <div class="status-row"><span>type</span><span style="color:var(--dm);">personality</span></div>
-      <div class="status-row"><span>tools</span><span style="color:var(--dm);">web + analytics</span></div>
-      <div class="status-row"><span>mode</span><span style="color:var(--dm);">on-demand</span></div>
-    </div>
-    <div class="agent-card" style="border-color:var(--a);opacity:0.65;">
-      <div class="card-title">security-guard</div>
-      <div class="ghost-wrap"><canvas id="g-security" width="64" height="72" style="image-rendering:pixelated;"></canvas></div>
-      <div class="status-row"><span>status</span><span class="badge unknown">STANDBY</span></div>
-      <div class="status-row"><span>type</span><span style="color:var(--dm);">personality</span></div>
-      <div class="status-row"><span>tools</span><span style="color:var(--dm);">terminal + file</span></div>
-      <div class="status-row"><span>mode</span><span style="color:var(--dm);">on-demand</span></div>
+  <div class="section-label">MCP tool agents <span class="count-badge" id="mcp-count"></span></div>
+  <div class="agents-grid" id="mcp-grid">
+    <div class="agent-card" style="border-color:var(--dm);opacity:0.5;">
+      <div class="card-title">loading...</div>
+      <div class="ghost-wrap"><canvas width="56" height="64" style="image-rendering:pixelated;opacity:0.3;"></canvas></div>
     </div>
   </div>
 
-  <!-- RESOURCES + LOG -->
+  <div class="section-label">personality agents <span class="count-badge" id="pers-count"></span></div>
+  <div class="agents-grid" id="pers-grid">
+    <div class="agent-card" style="border-color:var(--dm);opacity:0.5;">
+      <div class="card-title">loading...</div>
+      <div class="ghost-wrap"></div>
+    </div>
+  </div>
+
   <div class="grid2">
     <div class="panel" style="border-color:var(--b);">
       <div class="panel-title">system resources · hetzner vps · 188.34.202.40</div>
@@ -133,48 +103,39 @@ body{background:var(--dk);font-family:'Press Start 2P',monospace;font-size:8px;c
       <div class="prog-row"><div class="prog-label"><span>MEMORY</span><span id="mem-v">--%</span></div><div class="prog-track"><div class="prog-fill pf-a" id="mem-b" style="width:0%"></div></div></div>
       <div class="prog-row"><div class="prog-label"><span>DISK</span><span id="dsk-v">--%</span></div><div class="prog-track"><div class="prog-fill pf-b" id="dsk-b" style="width:0%"></div></div></div>
       <div class="prog-row"><div class="prog-label"><span>NETWORK</span><span id="net-v">--%</span></div><div class="prog-track"><div class="prog-fill pf-p" id="net-b" style="width:0%"></div></div></div>
-      <div style="margin-top:8px;font-size:6px;color:var(--dm);">updated: <span id="lupd" style="color:var(--g)">--</span><button class="refresh-btn" onclick="fetchData()">↺ refresh</button></div>
+      <div style="margin-top:6px;font-size:6px;color:var(--dm);">updated: <span id="lupd" style="color:var(--g)">--</span><button class="refresh-btn" onclick="fetchData()">↺ refresh</button></div>
     </div>
     <div class="panel">
       <div class="panel-title">activity log — live from hermes</div>
-      <div id="log-box"><div class="log-line"><span class="lt">--:--:--</span><span class="lm info">connecting to api...</span></div></div>
+      <div id="log-box"><div class="log-line"><span class="lt">--:--:--</span><span class="lm info">connecting...</span></div></div>
     </div>
   </div>
 
-  <!-- CRON + PERSONALITIES -->
   <div class="grid2">
     <div class="panel">
-      <div class="panel-title">scheduled cron jobs</div>
+      <div class="panel-title">cron jobs</div>
       <div id="cron-box"><div class="cron-row"><span style="color:var(--dm)">loading...</span></div></div>
     </div>
     <div class="panel" style="border-color:var(--a);">
-      <div class="panel-title">active personalities</div>
-      <div style="margin-top:4px;">
-        <span class="pers-tag" style="border:1px solid var(--r);color:var(--r);">job-scout</span>
-        <span class="pers-tag" style="border:1px solid var(--b);color:var(--b);">calendar</span>
-        <span class="pers-tag" style="border:1px solid var(--p);color:var(--p);">tech-writer</span>
-        <span class="pers-tag" style="border:1px solid var(--a);color:var(--a);">doc-reviewer</span>
-        <span class="pers-tag" style="border:1px solid var(--pk);color:var(--pk);">researcher</span>
-        <span class="pers-tag" style="border:1px solid var(--o);color:var(--o);">fin-advisor</span>
-        <span class="pers-tag" style="border:1px solid var(--g);color:var(--g);">security</span>
-      </div>
+      <div class="panel-title">hermes core</div>
+      <div class="status-row"><span>gateway</span><span class="badge" id="gw-status">--</span></div>
+      <div class="status-row"><span>version</span><span style="color:var(--p);" id="h-ver">--</span></div>
+      <div class="status-row"><span>mcp servers</span><span style="color:var(--a);" id="h-mcp">--</span></div>
+      <div class="status-row"><span>sessions</span><span style="color:var(--b);" id="h-sess">--</span></div>
+      <div class="status-row"><span>uptime</span><span style="color:var(--g);" id="h-up">--</span></div>
     </div>
   </div>
 
-  <!-- TICKER -->
-  <div class="ticker">
-    <span class="ticker-text" id="ticker">● HERMES AGENT OFFICE ONLINE &nbsp;&nbsp;&nbsp;</span>
-  </div>
+  <div class="ticker"><span class="ticker-text" id="ticker">● HERMES AGENT OFFICE LOADING... &nbsp;&nbsp;</span></div>
 
-  <!-- BOTTOM BAR -->
   <div class="bbar">
     <div style="display:flex;gap:16px;">
       <span>VPS: <span class="sv" id="b-vps">--</span></span>
       <span>MCP: <span class="sv" id="b-mcp">--</span></span>
+      <span>PERSONALITIES: <span class="sv" id="b-pers">--</span></span>
       <span>SESSIONS: <span class="sv" id="b-sess">--</span></span>
-      <span>UPTIME: <span class="sv" id="b-up">--</span></span>
     </div>
-    <div>HERMES v0.12.0 · ubuntu-8gb-nbg1-1 · auto-refresh 30s</div>
+    <div>HERMES v0.12.0 · auto-refresh 30s</div>
   </div>
 
 </div>
@@ -182,120 +143,151 @@ body{background:var(--dk);font-family:'Press Start 2P',monospace;font-size:8px;c
 <script>
 const API = 'http://188.34.202.40:5000/api/status';
 
-function drawGhost(id, color, variant) {
-  const c = document.getElementById(id);
-  if (!c) return;
-  const ctx = c.getContext('2d');
-  const S = 4;
-  ctx.clearRect(0, 0, c.width, c.height);
+const GHOST_COLORS = [
+  '#ff0000','#4fc3f7','#b39ddb','#ff69b4','#ff8c00',
+  '#ffb000','#00ffcc','#aaff00','#00e5ff','#ff4444',
+  '#7c6af7','#4fd1a0','#f7c26a','#ff6eb4','#44aaff',
+  '#ff9966','#66ff99','#cc99ff','#ffcc44','#44ccff',
+];
 
-  function px(x, y, w, h, col) {
-    ctx.fillStyle = col;
-    ctx.fillRect(x*S, y*S, (w||1)*S, (h||1)*S);
-  }
+const GHOST_VARIANTS = [
+  'normal','normal','wavy','normal','spiky',
+  'scared','normal','wavy','spiky','normal',
+  'wavy','normal','scared','spiky','normal',
+  'wavy','normal','scared','spiky','normal',
+];
 
+function drawGhost(canvas, color, variant, size) {
+  if (!canvas) return;
+  const S = size || 4;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   const g = color, e = '#ffffff', pu = '#1a1aff';
-
-  const body = [
-    [3,0,10],[2,1,12],[1,2,14],[1,3,14],[1,4,14],
-    [1,5,14],[1,6,14],[1,7,14],[1,8,14],[1,9,14],
-    [1,10,14],[1,11,14],[1,12,14],
-  ];
-  body.forEach(([x,y,w]) => px(x,y,w,1,g));
-
-  if (variant === 'wavy') {
-    [[1,13,4],[6,13,3],[10,13,4]].forEach(([x,y,w]) => px(x,y,w,2,g));
-    px(5,14,1,1,g); px(9,14,1,1,g);
-  } else if (variant === 'spiky') {
-    [[1,13,2],[4,12,2],[7,13,2],[10,12,2],[13,13,2]].forEach(([x,y,w]) => px(x,y,w,2,g));
-  } else if (variant === 'scared') {
-    [[1,13,4],[6,13,4],[11,13,4]].forEach(([x,y,w]) => px(x,y,w,2,g));
-    px(1,9,14,1,e); px(3,10,1,1,e); px(6,10,1,1,e); px(9,10,1,1,e); px(12,10,1,1,e);
-  } else {
-    [[1,13,4],[6,13,4],[11,13,4]].forEach(([x,y,w]) => px(x,y,w,2,g));
-  }
-
-  [[3,4,4,4],[9,4,4,4]].forEach(([x,y,w,h]) => px(x,y,w,h,e));
-  [[4,5,2,2],[10,5,2,2]].forEach(([x,y,w,h]) => px(x,y,w,h,pu));
+  function px(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x*S,y*S,(w||1)*S,(h||1)*S);}
+  [[3,0,10],[2,1,12],[1,2,14],[1,3,14],[1,4,14],[1,5,14],[1,6,14],[1,7,14],[1,8,14],[1,9,14],[1,10,14],[1,11,14],[1,12,14]].forEach(([x,y,w])=>px(x,y,w,1,g));
+  if(variant==='wavy'){[[1,13,4],[6,13,3],[10,13,4]].forEach(([x,y,w])=>px(x,y,w,2,g));px(5,14,1,1,g);px(9,14,1,1,g);}
+  else if(variant==='spiky'){[[1,13,2],[4,12,2],[7,13,2],[10,12,2],[13,13,2]].forEach(([x,y,w])=>px(x,y,w,2,g));}
+  else if(variant==='scared'){[[1,13,4],[6,13,4],[11,13,4]].forEach(([x,y,w])=>px(x,y,w,2,g));px(1,9,14,1,e);[3,6,9,12].forEach(x=>px(x,10,1,1,e));}
+  else{[[1,13,4],[6,13,4],[11,13,4]].forEach(([x,y,w])=>px(x,y,w,2,g));}
+  [[3,4,4,4],[9,4,4,4]].forEach(([x,y,w,h])=>px(x,y,w,h,e));
+  [[4,5,2,2],[10,5,2,2]].forEach(([x,y,w,h])=>px(x,y,w,h,pu));
   px(3,3,10,1,'#000000');
 }
 
-const ghosts = [
-  {id:'g-jobscout',   color:'#ff0000', variant:'normal'},
-  {id:'g-calendar',   color:'#4fc3f7', variant:'normal'},
-  {id:'g-hermes',     color:'#b39ddb', variant:'wavy'},
-  {id:'g-researcher', color:'#ff69b4', variant:'normal'},
-  {id:'g-finance',    color:'#ff8c00', variant:'spiky'},
-  {id:'g-security',   color:'#ffb000', variant:'scared'},
-];
-
-ghosts.forEach(g => drawGhost(g.id, g.color, g.variant));
-
-function animGhosts() {
-  ghosts.forEach((g, i) => {
-    const c = document.getElementById(g.id);
-    if (c) c.style.transform = `translateY(${Math.sin(Date.now()/500 + i*1.3)*4}px)`;
+const animTargets = [];
+function animLoop(){
+  animTargets.forEach((t,i)=>{
+    if(t.el) t.el.style.transform=`translateY(${Math.sin(Date.now()/500+i*1.1)*3}px)`;
   });
-  requestAnimationFrame(animGhosts);
+  requestAnimationFrame(animLoop);
 }
-animGhosts();
+animLoop();
 
-function updateClock() {
-  const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  const cl = document.getElementById('clock');
-  const dt = document.getElementById('date');
-  if (cl) cl.textContent = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
-  if (dt) dt.textContent = now.toDateString().toUpperCase();
+function makeBadge(status){
+  const m={ok:'OK',active:'ACTIVE',ready:'READY',failed:'FAILED',unknown:'?',online:'ONLINE',offline:'OFFLINE'};
+  const cls={ok:'b-ok',active:'b-active',ready:'b-ready',failed:'b-failed',unknown:'b-unknown',online:'b-online',offline:'b-offline'};
+  return `<span class="badge ${cls[status]||'b-unknown'}">${m[status]||status.toUpperCase()}</span>`;
 }
-setInterval(updateClock, 1000);
+
+function buildAgentCards(agents, gridId, type, colorOffset) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = '';
+  animTargets.length = 0;
+
+  agents.forEach((agent, i) => {
+    const color = GHOST_COLORS[(i + colorOffset) % GHOST_COLORS.length];
+    const variant = GHOST_VARIANTS[(i + colorOffset) % GHOST_VARIANTS.length];
+    const isMcp = type === 'mcp';
+    const status = agent.status || 'unknown';
+    const opacity = (status === 'failed' || status === 'unknown') && isMcp ? '0.6' : '1';
+    const borderColor = color;
+
+    const canvasId = `ghost-${gridId}-${i}`;
+    const card = document.createElement('div');
+    card.className = 'agent-card';
+    card.style.cssText = `border-color:${borderColor};opacity:${opacity};`;
+
+    const typeLabel = isMcp ? 'mcp tool' : 'personality';
+    const statusBadge = makeBadge(isMcp ? (status==='ok'?'active':status) : 'ready');
+    const promptSnip = agent.prompt ? agent.prompt.substring(0,40)+'...' : '';
+
+    card.innerHTML = `
+      <div class="card-title">${agent.name}</div>
+      <div class="ghost-wrap"><canvas id="${canvasId}" width="56" height="64" style="image-rendering:pixelated;"></canvas></div>
+      <div class="status-row"><span>status</span>${statusBadge}</div>
+      <div class="status-row"><span>type</span><span style="color:var(--dm);font-size:5px;">${typeLabel}</span></div>
+      ${promptSnip ? `<div class="status-row"><span style="color:var(--dm);font-size:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${promptSnip}</span></div>` : ''}
+    `;
+    grid.appendChild(card);
+
+    setTimeout(() => {
+      const canvas = document.getElementById(canvasId);
+      drawGhost(canvas, color, variant, 4);
+      animTargets.push({el: canvas, color, variant});
+    }, 50);
+  });
+}
+
+function updateClock(){
+  const now=new Date(), pad=n=>String(n).padStart(2,'0');
+  const cl=document.getElementById('clock'), dt=document.getElementById('date');
+  if(cl) cl.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  if(dt) dt.textContent=now.toDateString().toUpperCase();
+}
+setInterval(updateClock,1000);
 updateClock();
 
-function set(id, val) { const e=document.getElementById(id); if(e) e.textContent=val; }
-function setBar(bi, vi, val) {
-  const b=document.getElementById(bi), v=document.getElementById(vi);
-  if(b) b.style.width=Math.min(val,100)+'%';
-  if(v) v.textContent=val+'%';
+function set(id,val){const e=document.getElementById(id);if(e)e.textContent=val;}
+function setBar(bi,vi,val){
+  const b=document.getElementById(bi),v=document.getElementById(vi);
+  if(b)b.style.width=Math.min(val,100)+'%';
+  if(v)v.textContent=val+'%';
 }
-function setBadge(id, status) {
-  const e=document.getElementById(id); if(!e) return;
-  const m={ok:'OK',active:'ACTIVE',failed:'FAILED',unknown:'?',online:'ONLINE',offline:'OFFLINE'};
-  e.textContent=(m[status]||status).toUpperCase();
-  e.className='badge '+(status==='ok'||status==='active'||status==='online'?status==='active'?'active':'ok':'status'==='failed'?'failed':'unknown');
+function setBadge(id,status){
+  const e=document.getElementById(id);if(!e)return;
+  const m={ok:'OK',active:'ACTIVE',ready:'READY',failed:'FAILED',unknown:'?',online:'ONLINE',offline:'OFFLINE'};
+  const cls={ok:'b-ok',active:'b-active',ready:'b-ready',failed:'b-failed',unknown:'b-unknown',online:'b-online',offline:'b-offline'};
+  e.textContent=(m[status]||status.toUpperCase());
+  e.className='badge '+(cls[status]||'b-unknown');
 }
 
-async function fetchData() {
-  const st = document.getElementById('api-status');
-  try {
-    const res = await fetch(API, {cache:'no-store'});
-    if (!res.ok) throw new Error('HTTP '+res.status);
-    const d = await res.json();
+async function fetchData(){
+  const st=document.getElementById('api-status');
+  try{
+    const res=await fetch(API,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d=await res.json();
     if(st){st.textContent='live data ✓';st.className='api-ok';}
 
-    const sys=d.system, h=d.hermes, js=d.agents.job_scout, cal=d.agents.icloud_calendar;
-
+    const sys=d.system, h=d.hermes, js=d.job_scout;
     setBar('cpu-b','cpu-v',sys.cpu);
     setBar('mem-b','mem-v',sys.memory);
     setBar('dsk-b','dsk-v',sys.disk);
     setBar('net-b','net-v',Math.min(sys.network,100));
 
-    setBadge('js-status', js.status==='ok'?'active':js.status);
-    setBadge('cal-status', cal.status==='ok'?'ok':cal.status);
     setBadge('gw-status', h.gateway);
+    set('h-ver','v'+h.version);
+    set('h-mcp',h.mcp_ok+'/'+h.mcp_total+' ok');
+    set('h-sess',h.sessions);
+    set('h-up',sys.uptime);
 
-    set('js-title', js.titles.length ? js.titles[0].substring(0,22) : '--');
-    set('js-salary', js.min_salary ? '$'+Number(js.min_salary).toLocaleString() : '--');
-    set('js-seen', js.seen_jobs+' jobs');
-    set('h-ver', 'v'+h.version);
-    set('h-mcp', h.mcp_ok+'/'+h.mcp_total+' ok');
-    set('h-up', sys.uptime);
     set('b-vps','online');
-    set('b-mcp', h.mcp_ok+'/'+h.mcp_total);
-    set('b-sess', h.sessions);
-    set('b-up', sys.uptime);
+    set('b-mcp',h.mcp_ok+'/'+h.mcp_total);
+    set('b-sess',h.sessions);
 
-    const now=new Date(), pad=n=>String(n).padStart(2,'0');
-    set('lupd', pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds()));
+    const now=new Date(),pad=n=>String(n).padStart(2,'0');
+    set('lupd',pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds()));
+
+    if(d.agents){
+      const mcpAgents=d.agents.filter(a=>a.type==='mcp');
+      const persAgents=d.agents.filter(a=>a.type==='personality');
+      set('mcp-count','('+mcpAgents.length+')');
+      set('pers-count','('+persAgents.length+')');
+      set('b-pers',persAgents.length);
+      buildAgentCards(mcpAgents,'mcp-grid','mcp',0);
+      buildAgentCards(persAgents,'pers-grid','personality',2);
+    }
 
     const lbox=document.getElementById('log-box');
     if(lbox&&d.logs){
@@ -309,35 +301,38 @@ async function fetchData() {
     const cbox=document.getElementById('cron-box');
     if(cbox&&d.cron_jobs){
       cbox.innerHTML='';
-      const cols=['var(--r)','var(--b)','var(--p)','var(--a)'];
+      const cols=['var(--r)','var(--b)','var(--p)','var(--a)','var(--g)'];
       d.cron_jobs.forEach((j,i)=>{
-        cbox.innerHTML+=`<div class="cron-row"><span style="color:${cols[i%4]}">${j.name}</span><span>${j.schedule}</span><span class="cron-next">${j.next_run}</span></div>`;
+        cbox.innerHTML+=`<div class="cron-row"><span style="color:${cols[i%5]}">${j.name}</span><span>${j.schedule}</span><span class="cron-next">${j.next_run}</span></div>`;
       });
     }
 
     const ticker=document.getElementById('ticker');
-    if(ticker){
-      ticker.textContent=[
-        '● JOB-SCOUT: '+(js.status==='ok'?'ACTIVE':'?'),
-        '● ICLOUD-CAL: '+(cal.status==='ok'?'OK':'?'),
+    if(ticker&&d.agents){
+      const parts=[
         '● GATEWAY: '+h.gateway.toUpperCase(),
         '● CPU: '+sys.cpu+'%',
         '● MEM: '+sys.memory+'%',
-        '● DISK: '+sys.disk+'%',
         '● UPTIME: '+sys.uptime,
         '● SESSIONS: '+h.sessions,
-        '● SEEN JOBS: '+js.seen_jobs,
         '● MCP: '+h.mcp_ok+'/'+h.mcp_total+' OK',
+        '● AGENTS: '+d.agents.length+' TOTAL',
+        '● SEEN JOBS: '+js.seen_jobs,
         '● VPS: '+sys.ip,
-      ].join('  \u00a0\u00a0\u00a0  ');
+      ];
+      d.agents.filter(a=>a.type==='mcp').forEach(a=>{
+        parts.push('● '+a.name.toUpperCase()+': '+(a.status==='ok'?'ACTIVE':a.status.toUpperCase()));
+      });
+      ticker.textContent=parts.join('  \u00a0\u00a0\u00a0  ');
     }
-  } catch(err) {
+  }catch(err){
     if(st){st.textContent='api offline — check VPS';st.className='api-err';}
+    console.error(err);
   }
 }
 
 fetchData();
-setInterval(fetchData, 30000);
+setInterval(fetchData,30000);
 </script>
 </body>
 </html>
