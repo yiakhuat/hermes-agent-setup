@@ -1,7 +1,7 @@
-# Hermes Agent — MCP Tools Setup Documentation
+# Hermes Agent — Complete Setup Documentation
 
 > **Author:** Victor  
-> **Platform:** Hermes Agent v0.12.0 on Hetzner VPS (Ubuntu 24.04)  
+> **Platform:** Hermes Agent v0.14.0 on Hetzner VPS (Ubuntu 24.04)  
 > **Last Updated:** May 2026
 
 ---
@@ -14,27 +14,33 @@
 4. [iCloud Calendar MCP Tool](#4-icloud-calendar-mcp-tool)
 5. [Job Scout MCP Tool](#5-job-scout-mcp-tool)
 6. [Registering MCP Tools with Hermes](#6-registering-mcp-tools-with-hermes)
-7. [Hermes Personalities](#7-hermes-personalities)
-8. [Job Search Profile — Persistent Preferences](#8-job-search-profile--persistent-preferences)
-9. [Usage Guide](#9-usage-guide)
-10. [Troubleshooting](#10-troubleshooting)
-11. [File Structure Reference](#11-file-structure-reference)
-12. [API Keys Reference](#12-api-keys-reference)
+7. [Personalities & Agent Manager](#7-personalities--agent-manager)
+8. [Communication Channels](#8-communication-channels)
+9. [Live Dashboard](#9-live-dashboard)
+10. [Telephony Agent](#10-telephony-agent)
+11. [Scheduled Cron Jobs](#11-scheduled-cron-jobs)
+12. [Usage Guide](#12-usage-guide)
+13. [Troubleshooting](#13-troubleshooting)
+14. [File Structure Reference](#14-file-structure-reference)
+15. [API Keys Reference](#15-api-keys-reference)
 
 ---
 
 ## 1. Project Overview
 
-This project extends a self-hosted **Hermes Agent** instance with two custom MCP (Model Context Protocol) tools:
+This project deploys a fully automated, self-hosted **Hermes Agent** on a Hetzner VPS with the following capabilities:
 
-| Tool | Purpose |
+| Capability | Description |
 |---|---|
-| `icloud-calendar` | Read, create, and update iCloud calendar events |
-| `job-scout` | Search job boards, filter by preferences, and return a clean digest |
+| **Job Scout** | Searches job boards daily, filters by preferences, delivers results |
+| **iCloud Calendar** | Read, create, and update Apple Calendar events |
+| **Telegram** | Chat and voice messaging with Hermes |
+| **WhatsApp** | Chat with Hermes via self-chat bridge |
+| **Phone Calls** | Call a Twilio number and speak to Hermes |
+| **Live Dashboard** | Real-time Pac-Man ghost agent office |
+| **Daily Reports** | Automated tech news and financial market summaries |
 
-Both tools run as **stdio MCP servers** on the Hetzner VPS and are registered permanently in Hermes' `config.yaml`. They persist across restarts and sessions — no repeated setup needed.
-
-The job scout tool additionally stores the user's job search preferences in a local JSON file on disk, so the user only needs to state their preferences once and Hermes remembers them forever.
+All components run 24/7 as systemd services, survive reboots, and are monitored via the live dashboard.
 
 ---
 
@@ -44,11 +50,12 @@ The job scout tool additionally stores the user's job search preferences in a lo
 |---|---|
 | **Server** | Hetzner VPS — Ubuntu 24.04 (8GB RAM) |
 | **Hostname** | `ubuntu-8gb-nbg1-1` |
-| **Hermes Version** | v0.12.0 (2026.4.30) |
-| **Python (Hermes venv)** | `/root/hermes-venv/bin/python3` |
+| **IP Address** | `188.34.202.40` |
+| **Hermes Version** | v0.14.0 |
+| **Python venv** | `/root/hermes-venv/bin/python3` |
 | **Hermes Config** | `~/.hermes/config.yaml` |
-| **Hermes Logs** | `~/.hermes/logs/` |
-| **MCP Scripts Location** | `/root/` |
+| **Environment Variables** | `~/.hermes/.env` |
+| **Logs** | `~/.hermes/logs/` |
 
 ---
 
@@ -57,24 +64,22 @@ The job scout tool additionally stores the user's job search preferences in a lo
 ### System Packages
 
 ```bash
-apt install python3-full python3-venv -y
+apt install python3-full python3-venv ffmpeg -y
 ```
 
-### Python Dependencies (Hermes venv)
-
-The MCP tools run inside the Hermes virtual environment at `/root/hermes-venv`. Install required packages there:
+### Python Dependencies
 
 ```bash
-/root/hermes-venv/bin/python3 -m pip install requests
+/root/hermes-venv/bin/python3 -m pip install requests caldav flask flask-cors psutil pyyaml twilio edge-tts
 ```
-
-> **Note:** The `mcp` package is already bundled with Hermes agent and does not need to be installed separately.
 
 ### Verify Installation
 
 ```bash
 /root/hermes-venv/bin/python3 -c "import mcp; print('mcp OK')"
 /root/hermes-venv/bin/python3 -c "import requests; print('requests OK')"
+/root/hermes-venv/bin/python3 -c "import edge_tts; print('edge_tts OK')"
+/root/hermes-venv/bin/python3 -c "import twilio; print('twilio OK')"
 ```
 
 ---
@@ -83,11 +88,7 @@ The MCP tools run inside the Hermes virtual environment at `/root/hermes-venv`. 
 
 ### Overview
 
-The iCloud Calendar tool connects to Apple's CalDAV API and exposes three capabilities to Hermes:
-
-- **List events** — fetch upcoming calendar events by date range and calendar name
-- **Create events** — add new events to any iCloud calendar
-- **Update events** — modify existing events by UID
+Connects to Apple's CalDAV API to manage iCloud calendar events directly from Hermes.
 
 ### File Location
 
@@ -95,17 +96,11 @@ The iCloud Calendar tool connects to Apple's CalDAV API and exposes three capabi
 /root/icloud_calendar_mcp.py
 ```
 
-### How It Works
+### Capabilities
 
-The tool uses the `caldav` Python library to communicate with `https://caldav.icloud.com`. It reads credentials from environment variables injected by Hermes at startup.
-
-### Key Functions
-
-| Function | Description |
-|---|---|
-| `fetch_events(cal_filter, days)` | Returns events within N days, optionally filtered by calendar name |
-| `create_event(cal_name, summary, start, end, description)` | Creates a new iCalendar event |
-| `update_event(uid, ...)` | Updates an existing event by its UID |
+- **List events** — fetch upcoming events by date range and calendar name
+- **Create events** — add new events to any iCloud calendar
+- **Update events** — modify existing events by UID
 
 ### Configuration in `config.yaml`
 
@@ -122,21 +117,23 @@ mcp_servers:
       ICLOUD_PASSWORD: your-app-specific-password
 ```
 
-> **Important:** Use an **App-Specific Password** from [appleid.apple.com](https://appleid.apple.com), not your regular iCloud password.
+> **Important:** Use an **App-Specific Password** from [appleid.apple.com](https://appleid.apple.com) → Security → App-Specific Passwords. Do not use your regular Apple ID password.
 
 ### MCP Tools Exposed
 
 | Tool Name | Description |
 |---|---|
-| `mcp_icloud_calendar_list_events` | List upcoming events |
-| `mcp_icloud_calendar_create_event` | Create a new event |
+| `mcp_icloud_calendar_list_events` | List upcoming calendar events |
+| `mcp_icloud_calendar_create_event` | Create a new calendar event |
 | `mcp_icloud_calendar_update_event` | Update an existing event by UID |
 
-### Example Usage in Hermes
+### Example Usage
 
 ```
 What's on my Family calendar this week?
+What's on my calendar for June 2?
 Create a meeting called "Team Sync" on May 10 from 9am to 10am in my Work calendar
+Update the Coffee with Karin event to May 13
 ```
 
 ---
@@ -145,7 +142,7 @@ Create a meeting called "Team Sync" on May 10 from 9am to 10am in my Work calend
 
 ### Overview
 
-The Job Scout tool searches multiple job boards, filters results against the user's saved preferences, deduplicates listings across sources, and returns a clean ranked digest. Preferences are saved permanently to disk so the user never has to repeat them.
+Searches multiple job boards, filters results against saved preferences, deduplicates listings, and delivers a clean ranked digest. Preferences are saved permanently — set once, remembered forever.
 
 ### File Location
 
@@ -157,21 +154,21 @@ The Job Scout tool searches multiple job boards, filters results against the use
 
 ```
 User asks Hermes → Hermes calls MCP tool → job_scout_mcp.py
-                                                    ↓
-                                         Load job_profile.json
-                                                    ↓
-                              ┌─────────────────────┴──────────────────────┐
-                              ↓                                             ↓
-                        Adzuna API                                   JSearch API
-                        (250 req/mo free)                         (200 req/mo free)
-                              ↓                                             ↓
-                              └─────────────────────┬──────────────────────┘
-                                                    ↓
-                                         Filter → Rank → Deduplicate
-                                                    ↓
-                                         Save to seen_jobs.json
-                                                    ↓
-                                         Return clean digest to Hermes
+                                                ↓
+                                     Load job_profile.json
+                                                ↓
+                          ┌─────────────────────┴──────────────────────┐
+                          ↓                                             ↓
+                    Adzuna API                                  JSearch API
+                    (250 req/mo free)                        (200 req/mo free)
+                          ↓                                             ↓
+                          └─────────────────────┬──────────────────────┘
+                                                ↓
+                                     Filter → Rank → Deduplicate
+                                                ↓
+                                     Save to seen_jobs.json
+                                                ↓
+                                     Return clean digest to Hermes
 ```
 
 ### Persistent Storage Files
@@ -181,21 +178,16 @@ User asks Hermes → Hermes calls MCP tool → job_scout_mcp.py
 | `~/hermes/tools/job_scout/job_profile.json` | Saved user preferences — loaded on every search |
 | `~/hermes/tools/job_scout/seen_jobs.json` | Deduplication cache — prevents showing same job twice |
 
-### Job Profile Schema
+### Current Job Profile
 
 ```json
 {
-  "job_titles": ["Senior Technical Program Manager", "Staff TPM"],
-  "keywords": ["TPM", "technical program manager"],
-  "locations": ["Remote", "San Francisco"],
-  "remote_only": true,
-  "min_salary": 160000,
-  "max_salary": null,
-  "experience_level": "senior",
-  "exclude_companies": [],
-  "preferred_industries": ["fintech", "infrastructure"],
-  "country": "us",
-  "results_per_search": 10,
+  "job_titles": ["Technical Project Manager", "Localization Manager"],
+  "locations": ["remote", "hybrid"],
+  "remote_only": false,
+  "min_salary": 140000,
+  "experience": "senior",
+  "industries": ["software", "consulting"],
   "max_days_old": 7
 }
 ```
@@ -205,7 +197,7 @@ User asks Hermes → Hermes calls MCP tool → job_scout_mcp.py
 | Source | API | Free Tier | Sign Up |
 |---|---|---|---|
 | Adzuna | REST API | 250 req/month | [developer.adzuna.com](https://developer.adzuna.com) |
-| JSearch | RapidAPI | 200 req/month | [rapidapi.com](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) |
+| JSearch | RapidAPI | 200 req/month | [rapidapi.com](https://rapidapi.com) |
 
 ### MCP Tools Exposed
 
@@ -231,27 +223,6 @@ mcp_servers:
       RAPIDAPI_KEY: your_rapidapi_key
 ```
 
-### Sample Output
-
-```
-🎯 Job Scout Digest — May 05, 2026
-
-Found 5 matching role(s):
-
-────────────────────────────────────────────────
-1. Senior Technical Program Manager @ Stripe
-   📍 Remote
-   💰 $180,000 – $220,000
-   📅 2026-05-03  |  🔗 https://stripe.com/jobs/...
-   📝 We are looking for a Senior TPM to lead cross-functional...
-
-────────────────────────────────────────────────
-2. Staff TPM, Infrastructure @ Figma
-   📍 Remote / San Francisco
-   💰 $200,000+
-   📅 2026-05-04  |  🔗 https://figma.com/careers/...
-```
-
 ---
 
 ## 6. Registering MCP Tools with Hermes
@@ -262,34 +233,7 @@ Found 5 matching role(s):
 nano ~/.hermes/config.yaml
 ```
 
-Append the MCP server entries at the bottom of the file under the `mcp_servers:` key. Both tools follow the same pattern:
-
-```yaml
-mcp_servers:
-  icloud-calendar:
-    command: /root/hermes-venv/bin/python3
-    args:
-    - /root/icloud_calendar_mcp.py
-    timeout: 60
-    connect_timeout: 60
-    env:
-      ICLOUD_EMAIL: your@icloud.com
-      ICLOUD_PASSWORD: your-app-specific-password
-  job-scout:
-    command: /root/hermes-venv/bin/python3
-    args:
-    - /root/job_scout_mcp.py
-    timeout: 60
-    connect_timeout: 60
-    env:
-      ADZUNA_APP_ID: your_adzuna_app_id
-      ADZUNA_APP_KEY: your_adzuna_app_key
-      RAPIDAPI_KEY: your_rapidapi_key
-```
-
-### Restart Hermes Gateway
-
-After every `config.yaml` change:
+Add both MCP servers under the `mcp_servers:` key. Restart after every change:
 
 ```bash
 systemctl --user restart hermes-gateway
@@ -298,104 +242,297 @@ systemctl --user restart hermes-gateway
 ### Verify Registration
 
 ```bash
-hermes tools list
+grep -i "registered" ~/.hermes/logs/agent.log | tail -5
 ```
 
-Expected output under **MCP servers**:
-
+Expected output:
 ```
-MCP servers:
-  icloud-calendar  all tools enabled
-  job-scout        all tools enabled
+MCP server 'job-scout' (stdio): registered 3 tool(s)
+MCP server 'icloud-calendar' (stdio): registered 3 tool(s)
 ```
 
 ---
 
-## 7. Hermes Personalities
+## 7. Personalities & Agent Manager
 
-Personalities allow Hermes to switch roles and behave differently depending on the task. They are defined in `config.yaml` and activated with `/personality <name>` inside the chat.
+Personalities allow Hermes to switch roles and specializations. They are defined in `config.yaml` under the `personalities:` key.
 
-### Configuration
+### Active Personalities
 
-```yaml
-personalities:
-  job-scout:
-    prompt: "You are a job search specialist. Always use the job-scout MCP tool when the user asks about jobs."
-  calendar-assistant:
-    prompt: "You are a calendar assistant. Always use icloud-calendar tools to manage schedules."
-  tech-writer:
-    prompt: "You are a professional technical writer. Write clear, structured documentation in Markdown."
-  doc-reviewer:
-    prompt: "You are a strict technical documentation reviewer. Check for clarity, accuracy, completeness, and consistency."
+| Name | Role |
+|---|---|
+| `job-scout` | Job search specialist — uses Job Scout MCP tool |
+| `calendar-assistant` | Calendar manager — uses iCloud Calendar MCP tool |
+| `researcher` | Web research and information gathering |
+| `Coder` | Software development and coding tasks |
+| `tech-writer` | Professional technical documentation |
+| `Doc-reviewer` | Documentation review and quality check |
+| `technical` | Detailed technical expert |
+| `creative` | Creative and innovative thinking |
+| `teacher` | Patient teaching with clear examples |
+| `manager` | Agent orchestrator — delegates tasks to specialists |
+
+### Manager Agent
+
+The manager personality coordinates all other agents for complex multi-step tasks:
+
 ```
+As manager, plan my week — find new TPM jobs, check my calendar, and research AI news
+```
+
+Hermes will automatically delegate to the right specialist and combine results.
 
 ### Switching Personalities
 
-Inside Hermes chat:
-
+From terminal:
+```bash
+hermes chat -q "/personality job-scout"
 ```
-/personality job-scout
-/personality calendar-assistant
-/personality tech-writer
+
+From Telegram or WhatsApp (natural language):
+```
+Switch to researcher mode
+Find me jobs (automatically uses job-scout)
 ```
 
 ---
 
-## 8. Job Search Profile — Persistent Preferences
+## 8. Communication Channels
 
-The most important feature of the Job Scout tool is that preferences are saved **once** and remembered forever.
+### Telegram
 
-### Setting Preferences (One Time Only)
+Hermes is connected to a Telegram bot and listens for messages 24/7.
 
-Start Hermes and say:
-
+**Configuration in `.env`:**
 ```
-Remember that I'm looking for Senior Technical Program Manager or 
-Staff TPM roles. Remote only, US-based. Minimum $160k salary. 
-Prefer fintech or infrastructure companies.
-```
-
-Hermes calls `update_job_profile` and writes to `job_profile.json`. This survives restarts, new sessions, and server reboots.
-
-### Verifying Saved Preferences
-
-```
-Show my job search profile
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_ALLOWED_USERS=your_telegram_user_id
+TELEGRAM_HOME_CHANNEL=your_telegram_user_id
 ```
 
-### Running a Search
+**Features:**
+- Text messaging
+- Voice message input (transcribed via local Whisper)
+- Voice output (Edge TTS / OpenAI TTS)
+- Home channel for cron job delivery
 
+**Voice mode:**
 ```
-Find me TPM jobs
-Find me Localization Manager jobs
-Any new program manager listings?
-```
-
-### Resetting Seen Jobs
-
-To see previously shown listings again:
-
-```
-Show me all TPM jobs including ones you've shown before
+/voice on      — always reply with voice
+/voice off     — text only
 ```
 
-Or delete the cache manually:
+### WhatsApp
+
+Connected via Baileys bridge in self-chat mode (message yourself).
+
+**Setup:**
+```bash
+hermes whatsapp   # Choose option 2 (personal number)
+                  # Scan QR code with your phone
+```
+
+**Configuration in `.env`:**
+```
+WHATSAPP_ENABLED=true
+WHATSAPP_ALLOWED_USERS=1XXXXXXXXXX
+```
+
+**Features:**
+- Text messaging
+- Voice message input (transcribed via local Whisper)
+- Text responses
+
+**Note:** Both Telegram and WhatsApp run simultaneously on the same Hermes gateway.
+
+---
+
+## 9. Live Dashboard
+
+### Overview
+
+A real-time Pac-Man ghost style dashboard showing the status of all Hermes agents, system resources, and activity logs.
+
+### Access
+
+- **URL:** `http://188.34.202.40:5000/`
+- **API:** `http://188.34.202.40:5000/api/status`
+
+### Features
+
+- MCP Tool Agents with live ACTIVE/FAILED status
+- All personality agents as colored ghost cards
+- Real CPU, memory, disk, and network usage
+- Live activity log from Hermes
+- Scheduled cron jobs
+- VPS uptime and session count
+- Auto-refreshes every 30 seconds
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `hermes_dashboard_api.py` | Flask backend API (port 5000) |
+| `hermes-agent-office-live.html` | Frontend dashboard |
+| `hermes-dashboard.service` | Systemd service |
+
+### Service Management
 
 ```bash
-rm ~/hermes/tools/job_scout/seen_jobs.json
+systemctl --user status hermes-dashboard
+systemctl --user restart hermes-dashboard
 ```
 
 ---
 
-## 9. Usage Guide
+## 10. Telephony Agent
+
+### Overview
+
+The telephony agent enables callers to speak directly to Hermes AI over a regular phone call. Built with Twilio and Flask.
+
+### Architecture
+
+```
+Incoming Call
+      ↓
+Twilio (toll-free number)
+      ↓
+Hetzner VPS (port 5001)
+      ↓
+hermes_telephony.py (Flask webhook)
+      ↓
+Hermes CLI (hermes chat -q)
+      ↓
+DeepSeek AI model
+      ↓
+Twilio TTS (Polly.Joanna / Polly.Zhiyu)
+      ↓
+Caller hears response
+```
+
+### File Location
+
+```
+/root/hermes_telephony.py
+```
+
+### Features
+
+- English and Chinese (Mandarin) language support
+- Automatic language detection from speech
+- Multi-turn conversation within a single call
+- Powered by Hermes with all MCP tools available
+- Runs 24/7 as a systemd service
+- No ngrok needed — uses direct VPS IP
+
+### Installation
+
+```bash
+# Install dependencies
+/root/hermes-venv/bin/python3 -m pip install twilio flask
+
+# Copy service file
+cp hermes-telephony.service ~/.config/systemd/user/
+
+# Enable and start
+systemctl --user daemon-reload
+systemctl --user enable hermes-telephony
+systemctl --user start hermes-telephony
+```
+
+### Twilio Configuration
+
+1. Create a Twilio account at [twilio.com](https://twilio.com)
+2. Get a toll-free US phone number
+3. In the Twilio Console → Phone Numbers → Configure:
+   - **Webhook URL:** `http://188.34.202.40:5001/voice/incoming`
+   - **HTTP Method:** `POST`
+4. Add credentials to `~/.hermes/.env`:
+
+```
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/voice/incoming` | POST | Handles incoming calls, greets caller |
+| `/voice/process` | POST | Processes speech, queries Hermes, responds |
+| `/voice/status` | POST | Call status callbacks from Twilio |
+| `/health` | GET | Service health check |
+
+### Service Management
+
+```bash
+systemctl --user status hermes-telephony
+systemctl --user restart hermes-telephony
+```
+
+### Testing
+
+```bash
+# Check health endpoint
+curl http://188.34.202.40:5001/health
+
+# Check service logs
+journalctl --user -u hermes-telephony -n 20
+```
+
+Then call your Twilio toll-free number from any phone. Speak your question in English or Chinese.
+
+---
+
+## 11. Scheduled Cron Jobs
+
+| ID | Name | Schedule (UTC) | Status |
+|---|---|---|---|
+| `0d35772459f4` | Daily Tech News Report | 3:00 PM daily | ✅ Active |
+| `05e4f24d5ded` | Daily Financial Market News | 4:00 PM daily | ✅ Active |
+| `5a56bc82a038` | GitHub Auto-Push | Midnight daily | ✅ Active |
+| `2c321efa08b2` | Daily Localization Job Openings | 5:00 PM daily | ✅ Active |
+| `6e9aa7ae6532` | Daily TPM Job Openings | 5:30 PM daily | ✅ Active |
+
+All cron results are delivered to the Telegram home channel.
+
+### Managing Cron Jobs
+
+```bash
+hermes cron list              # List all jobs with status
+hermes cron run <job_id>      # Trigger a job immediately
+hermes cron pause <job_id>    # Pause a job
+hermes cron resume <job_id>   # Resume a paused job
+```
+
+---
+
+## 12. Usage Guide
+
+### Terminal (Recommended for Quick Tasks)
+
+```bash
+# One-time alias setup
+echo 'alias h="hermes chat -q"' >> ~/.bashrc
+source ~/.bashrc
+
+# Examples
+h "find me TPM jobs"
+h "what's on my calendar this week?"
+h "research latest AI agent frameworks in 2026"
+h "switch to manager and plan my week"
+h "show my job search profile"
+```
 
 ### Calendar Commands
 
 | What to say | What happens |
 |---|---|
-| `What's on my Family calendar this week?` | Lists events for the next 7 days |
+| `What's on my calendar this week?` | Lists events for the next 7 days |
 | `What's on my calendar for June 2?` | Lists events for a specific date |
-| `Create a meeting called Team Sync on May 10 from 9am to 10am in Work calendar` | Creates a new event |
+| `Create a meeting called Team Sync on May 10 from 9am to 10am` | Creates a new event |
 | `Update the Coffee with Karin event to May 13` | Updates an existing event |
 
 ### Job Search Commands
@@ -404,89 +541,127 @@ rm ~/hermes/tools/job_scout/seen_jobs.json
 |---|---|
 | `Find me TPM jobs` | Searches using saved profile |
 | `Find me Localization Manager jobs` | Searches for a specific role |
-| `Remember I only want remote jobs above $140k` | Updates saved preferences |
+| `Remember I only want remote jobs above $150k` | Updates saved preferences |
 | `Show my job search profile` | Displays current preferences |
-| `Find jobs and include ones I've seen before` | Ignores dedup cache |
+| `Find jobs including ones I've seen before` | Bypasses dedup cache |
+
+### Telephony Commands
+
+Call your Twilio number and speak naturally in English or Chinese:
+- *"What jobs are available for me?"*
+- *"What's on my calendar today?"*
+- *"Tell me the latest tech news"*
+- *"你好，帮我查一下我的日历"*
 
 ---
 
-## 10. Troubleshooting
+## 13. Troubleshooting
 
-### MCP Tool Shows as "Failed"
-
-Check the MCP error log:
-
-```bash
-tail -30 ~/.hermes/logs/mcp-stderr.log
-```
-
-**Common errors and fixes:**
-
-| Error | Fix |
-|---|---|
-| `ModuleNotFoundError: No module named 'requests'` | `/root/hermes-venv/bin/python3 -m pip install requests` |
-| `ModuleNotFoundError: No module named 'mcp'` | `/root/hermes-venv/bin/python3 -m pip install mcp` |
-| `AuthorizationError` (iCloud) | Regenerate App-Specific Password at appleid.apple.com |
-| No jobs returned | Check API keys are correctly set in `config.yaml` |
-
-### After Any Fix
-
-Always restart the gateway:
+### Hermes Gateway Not Responding
 
 ```bash
 systemctl --user restart hermes-gateway
-```
-
-### Verify Gateway Status
-
-```bash
 systemctl --user status hermes-gateway
+tail -20 ~/.hermes/logs/agent.log
 ```
 
-### Check Agent Logs
+### MCP Tool Shows Unknown/Failed Status
 
 ```bash
-tail -50 ~/.hermes/logs/agent.log
+grep -i "job-scout\|icloud-calendar" ~/.hermes/logs/agent.log | tail -5
 ```
+
+### Dashboard Not Loading
+
+```bash
+systemctl --user restart hermes-dashboard
+curl http://localhost:5000/api/health
+```
+
+### Telephony Agent Not Responding to Calls
+
+```bash
+systemctl --user restart hermes-telephony
+curl http://localhost:5001/health
+```
+
+### YAML Config Errors
+
+```bash
+/root/hermes-venv/bin/python3 -c "
+import yaml
+try:
+    yaml.safe_load(open('/root/.hermes/config.yaml'))
+    print('OK - no errors')
+except yaml.YAMLError as e:
+    print('ERROR:', e)
+"
+```
+
+### Common Errors and Fixes
+
+| Error | Fix |
+|---|---|
+| `NoneType object is not iterable` | Run `hermes model` and switch to DeepSeek provider |
+| `Failed to parse config.yaml` | Check for tab characters or duplicate keys in YAML |
+| `MCP server registered 0 tools` | Verify API keys in `config.yaml` env section |
+| `File not found: tts_*.mp3` | Clear audio cache: `rm -f ~/.hermes/audio_cache/tts_*` |
+| `Session DB: file is not a database` | Remove state files: `rm -f ~/.hermes/state.db*` |
+| WhatsApp not responding | Clear sessions and restart: `rm -rf ~/.hermes/sessions/* && systemctl --user restart hermes-gateway` |
 
 ---
 
-## 11. File Structure Reference
+## 14. File Structure Reference
 
 ```
 /root/
-├── icloud_calendar_mcp.py        # iCloud Calendar MCP server
-├── job_scout_mcp.py              # Job Scout MCP server
-├── hermes-venv/                  # Python venv used by MCP tools
-│   └── bin/python3               # Python interpreter
+├── icloud_calendar_mcp.py         # iCloud Calendar MCP server
+├── job_scout_mcp.py               # Job Scout MCP server
+├── hermes_dashboard_api.py        # Dashboard Flask API (port 5000)
+├── hermes_telephony.py            # Telephony agent Flask server (port 5001)
+├── hermes-agent-office-live.html  # Live dashboard frontend
+├── hermes-venv/                   # Python virtual environment
+│   └── bin/python3
 └── hermes/
     └── tools/
         └── job_scout/
-            ├── job_profile.json  # Persistent job preferences
-            └── seen_jobs.json    # Deduplication cache
+            ├── job_profile.json   # Persistent job preferences
+            └── seen_jobs.json     # Deduplication cache
 
 ~/.hermes/
-├── config.yaml                   # Main Hermes configuration
+├── config.yaml                    # Main Hermes configuration
+├── .env                           # API keys and environment variables
 ├── logs/
-│   ├── agent.log                 # Agent activity log
-│   ├── mcp-stderr.log            # MCP server error log
-│   └── errors.log                # General error log
-└── skills/                       # Hermes skills library
+│   ├── agent.log                  # Agent activity log
+│   └── mcp-stderr.log             # MCP server error log
+├── audio_cache/                   # TTS audio files (auto-cleaned)
+├── sessions/                      # Conversation history
+└── whatsapp/
+    └── session/                   # WhatsApp Baileys bridge session
+
+~/.config/systemd/user/
+├── hermes-gateway.service         # Main Hermes agent
+├── hermes-dashboard.service       # Dashboard API
+└── hermes-telephony.service       # Telephony agent
 ```
 
 ---
 
-## 12. API Keys Reference
+## 15. API Keys Reference
 
-| Key | Where to Get | Environment Variable |
-|---|---|---|
-| Adzuna App ID | [developer.adzuna.com](https://developer.adzuna.com) | `ADZUNA_APP_ID` |
-| Adzuna App Key | [developer.adzuna.com](https://developer.adzuna.com) | `ADZUNA_APP_KEY` |
-| RapidAPI Key (JSearch) | [rapidapi.com](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) | `RAPIDAPI_KEY` |
-| iCloud App Password | [appleid.apple.com](https://appleid.apple.com) → Security → App-Specific Passwords | `ICLOUD_PASSWORD` |
-
-All keys are stored securely in `~/.hermes/config.yaml` under each MCP server's `env:` block and are never exposed to the user or logged.
+| Service | Key(s) | Where to Get | Config Location |
+|---|---|---|---|
+| Adzuna | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` | [developer.adzuna.com](https://developer.adzuna.com) | `config.yaml` → `mcp_servers.job-scout.env` |
+| JSearch | `RAPIDAPI_KEY` | [rapidapi.com](https://rapidapi.com) | `config.yaml` → `mcp_servers.job-scout.env` |
+| iCloud | `ICLOUD_EMAIL` + `ICLOUD_PASSWORD` | [appleid.apple.com](https://appleid.apple.com) → App-Specific Passwords | `config.yaml` → `mcp_servers.icloud-calendar.env` |
+| DeepSeek | `DEEPSEEK_API_KEY` | [platform.deepseek.com](https://platform.deepseek.com) | `~/.hermes/.env` |
+| Telegram | `TELEGRAM_BOT_TOKEN` | [@BotFather](https://t.me/BotFather) on Telegram | `~/.hermes/.env` |
+| OpenAI TTS | `VOICE_TOOLS_OPENAI_KEY` | [platform.openai.com](https://platform.openai.com) | `~/.hermes/.env` |
+| Twilio | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` | [console.twilio.com](https://console.twilio.com) | `~/.hermes/.env` |
+| Finnhub | `FINNHUB_API_KEY` | [finnhub.io](https://finnhub.io) | `~/.hermes/.env` |
+| NewsData | `NEWSDATA_API_KEY` | [newsdata.io](https://newsdata.io) | `~/.hermes/.env` |
+| Twelve Data | `TWELVE_DATA_API_KEY` | [twelvedata.com](https://twelvedata.com) | `~/.hermes/.env` |
 
 ---
 
-*Documentation generated with Hermes Agent — tech-writer + doc-reviewer personalities.*
+*Documentation maintained by Victor · Hermes Agent v0.14.0 · May 2026*
