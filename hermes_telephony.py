@@ -1,201 +1,213 @@
 """
 hermes_telephony.py
-Hermes Telephony Agent - Handles incoming Twilio voice calls
-Connects callers to Hermes AI agent with speech-to-text and text-to-speech
-
-Run: /root/hermes-venv/bin/python3 hermes_telephony.py
+Victor's Assistant — Telephony Agent
+Simple, robust bilingual English/Chinese support
+Flow: Greeting → Language Select → Q&A Loop → Goodbye
 """
 
-import os
+import re
 import subprocess
-import tempfile
-import asyncio
-import edge_tts
 from pathlib import Path
 from flask import Flask, request, Response
 from twilio.twiml.voice_response import VoiceResponse, Gather
 
 app = Flask(__name__)
 
-# ── Config ─────────────────────────────────────────────
-HERMES_CMD     = "/usr/local/bin/hermes"
-AUDIO_DIR      = Path("/root/.hermes/audio_cache")
-AUDIO_DIR.mkdir(parents=True, exist_ok=True)
-
-# Greeting message
-GREETING_EN = "Hello! You've reached Hermes AI Assistant. Please speak your question after the tone."
-GREETING_ZH = "你好！这里是Hermes AI助手。请在提示音后说出您的问题。"
-
-# TTS voices
-VOICE_EN = "en-US-AriaNeural"
-VOICE_ZH = "zh-CN-XiaoxiaoNeural"
+HERMES_CMD = "/usr/local/bin/hermes"
+VOICE_EN   = "Polly.Joanna"
+VOICE_ZH   = "Polly.Zhiyu"
+LANG_EN    = "en-US"
+LANG_ZH    = "cmn-CN"
+STT_EN     = "en-US"
+STT_ZH     = "zh-CN"
 
 
-# ── TTS Helper ─────────────────────────────────────────
+# ── Hermes ─────────────────────────────────────────────
 
-async def text_to_speech_async(text: str, voice: str, output_path: str):
-    """Convert text to speech using Edge TTS."""
-    tts = edge_tts.Communicate(text, voice)
-    await tts.save(output_path)
-
-
-def text_to_speech(text: str, lang: str = "en") -> str:
-    """Generate TTS audio and return file path."""
-    voice = VOICE_ZH if lang == "zh" else VOICE_EN
-    output_path = str(AUDIO_DIR / f"call_tts_{os.urandom(6).hex()}.mp3")
-    asyncio.run(text_to_speech_async(text, voice, output_path))
-    return output_path
-
-
-def detect_language(text: str) -> str:
-    """Simple language detection - check for Chinese characters."""
-    for char in text:
-        if '\u4e00' <= char <= '\u9fff':
-            return "zh"
-    return "en"
-
-
-# ── Hermes Integration ─────────────────────────────────
-
-def ask_hermes(question: str) -> str:
-    """Send question to Hermes and get response."""
+def ask_hermes(question: str, lang: str) -> str:
+    """Ask Hermes a question. Force Chinese reply if lang=zh."""
     try:
+        if lang == "zh":
+            prompt = f"请务必只用中文回答，不要用英文回答。问题是：{question}"
+        else:
+            prompt = question
+
         result = subprocess.run(
-            [HERMES_CMD, "chat", "-q", question, "-Q"],
-            capture_output=True,
-            text=True,
-            timeout=30,
+            [HERMES_CMD, "chat", "-q", prompt, "-Q"],
+            capture_output=True, text=True, timeout=25,
         )
-        response = result.stdout.strip()
-        # Clean up session info from output
-        if "Session:" in response:
-            response = response.split("Session:")[0].strip()
-        if "Resume this session" in response:
-            response = response.split("Resume this session")[0].strip()
-        # Remove ANSI escape codes
-        import re
-        response = re.sub(r'\x1b\[[0-9;]*m', '', response)
-        response = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', response)
-        response = re.sub(r'\^\[\[[0-9;]*m', '', response)
-        response = response.strip()
-        if not response:
-            return "I'm sorry, I couldn't process your request. Please try again."
-        return response[:500]  # Limit response length for voice
+        text = result.stdout.strip()
+
+        # Clean up metadata
+        for marker in ["Session:", "Resume this session", "Duration:", "Messages:"]:
+            if marker in text:
+                text = text.split(marker)[0].strip()
+
+        # Clean ANSI codes
+        text = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+        text = re.sub(r'\x1b\].*?(\x07|\x1b\\)', '', text)
+        text = text.strip()
+
+        if not text:
+            return "对不起，请再试一次。" if lang == "zh" else "Sorry, please try again."
+
+        return text[:450]
+
     except subprocess.TimeoutExpired:
-        return "I'm sorry, that took too long to process. Please try a shorter question."
+        return "问题太复杂了，请简短一点。" if lang == "zh" else "That took too long, please ask something shorter."
     except Exception as e:
-        print(f"Hermes error: {e}")
-        return "I'm sorry, I encountered an error. Please try again."
+        print(f"[Hermes error] {e}")
+        return "系统错误，请再试。" if lang == "zh" else "System error, please try again."
 
 
-# ── Twilio Routes ──────────────────────────────────────
+# ── Helper ─────────────────────────────────────────────
+
+def say(response, text, lang):
+    """Speak text in correct language."""
+    if lang == "zh":
+        response.say(text, voice=VOICE_ZH, language=LANG_ZH)
+    else:
+        response.say(text, voice=VOICE_EN, language=LANG_EN)
+
+
+def listen(action, lang, prompt_text):
+    """Build a Gather that listens in correct language."""
+    stt_lang = STT_ZH if lang == "zh" else STT_EN
+    voice    = VOICE_ZH if lang == "zh" else VOICE_EN
+    tts_lang = LANG_ZH if lang == "zh" else LANG_EN
+
+    gather = Gather(
+        input="speech",
+        action=action,
+        timeout=8,
+        speech_timeout="auto",
+        language=stt_lang,
+    )
+    gather.say(prompt_text, voice=voice, language=tts_lang)
+    return gather
+
+
+# ── Routes ─────────────────────────────────────────────
 
 @app.route("/voice/incoming", methods=["GET", "POST"])
 def incoming_call():
-    """Handle incoming call - greet and start listening."""
+    """Step 1: Greet and ask caller to choose language."""
     response = VoiceResponse()
 
-    # Gather speech input from caller
     gather = Gather(
-        input="speech",
-        action="/voice/process",
-        timeout=5,
-        speech_timeout="auto",
-        language="en-US zh-CN",
+        input="dtmf",
+        action="/voice/set_language",
+        timeout=8,
+        num_digits=1,
     )
     gather.say(
-        "Hello! You've reached Hermes AI Assistant. "
-        "Please speak your question after this message.",
-        voice="Polly.Joanna",
-        language="en-US",
+        "Hello! You have reached Victor's Assistant. Press 1 for English. "
+        "你好！这里是Victor的智能助手。按2说中文。",
+        voice=VOICE_EN,
+        language=LANG_EN,
     )
     response.append(gather)
 
-    # If no input received
-    response.say(
-        "I didn't hear anything. Please call back and speak your question.",
-        voice="Polly.Joanna",
-    )
+    # No key pressed — default English
+    response.redirect("/voice/qa/en")
     return Response(str(response), mimetype="text/xml")
 
 
-@app.route("/voice/process", methods=["GET", "POST"])
-def process_speech():
-    """Process caller's speech and respond with Hermes answer."""
-    speech_result = request.values.get("SpeechResult", "")
-    confidence = request.values.get("Confidence", "0")
+@app.route("/voice/set_language", methods=["GET", "POST"])
+def set_language():
+    """Step 2: Set language and go to Q&A."""
+    digit = request.values.get("Digits", "1").strip()
+    print(f"[Telephony] Key pressed: '{digit}'")
+    response = VoiceResponse()
+    lang = "zh" if digit == "2" else "en"
+    response.redirect(f"/voice/qa/{lang}")
+    return Response(str(response), mimetype="text/xml")
 
-    print(f"Caller said: '{speech_result}' (confidence: {confidence})")
 
+@app.route("/voice/qa/<lang>", methods=["GET", "POST"])
+def qa(lang):
+    """Step 3: Ask caller for their question."""
     response = VoiceResponse()
 
-    if not speech_result:
-        response.say(
-            "I'm sorry, I couldn't understand that. Please try again.",
-            voice="Polly.Joanna",
-        )
-        response.redirect("/voice/incoming")
-        return Response(str(response), mimetype="text/xml")
-
-    # Detect language
-    lang = detect_language(speech_result)
-
-    # Get response from Hermes
-    print(f"Asking Hermes: {speech_result}")
-    hermes_response = ask_hermes(speech_result)
-    print(f"Hermes replied: {hermes_response}")
-
-    # Respond using Twilio's built-in TTS
     if lang == "zh":
-        response.say(
-            hermes_response,
-            voice="Polly.Zhiyu",
-            language="cmn-CN",
-        )
+        prompt = "请说出您的问题。"
+        no_speech_msg = "我没有听到您说话。请再次拨打。再见！"
     else:
-        response.say(
-            hermes_response,
-            voice="Polly.Joanna",
-            language="en-US",
-        )
+        prompt = "Please speak your question now."
+        no_speech_msg = "I did not hear anything. Please call back. Goodbye!"
 
-    # Ask if they want to continue
-    gather = Gather(
-        input="speech",
-        action="/voice/process",
-        timeout=5,
-        speech_timeout="auto",
-        language="en-US zh-CN",
-    )
-    gather.say(
-        "Do you have another question? Please speak now, or hang up to end the call.",
-        voice="Polly.Joanna",
+    gather = listen(
+        action=f"/voice/answer/{lang}",
+        lang=lang,
+        prompt_text=prompt,
     )
     response.append(gather)
 
-    response.say("Thank you for calling Hermes. Goodbye!", voice="Polly.Joanna")
+    # Truly no speech at all — say goodbye and hang up
+    say(response, no_speech_msg, lang)
     response.hangup()
+    return Response(str(response), mimetype="text/xml")
 
+
+@app.route("/voice/answer/<lang>", methods=["GET", "POST"])
+def answer(lang):
+    """Step 4: Get Hermes answer and speak it. Then loop back for more questions."""
+    speech = request.values.get("SpeechResult", "").strip()
+    print(f"[Telephony] [{lang}] Question: '{speech}'")
+
+    response = VoiceResponse()
+
+    # Nothing transcribed — retry once
+    if not speech:
+        if lang == "zh":
+            response.say("对不起，我没有听清楚。", voice=VOICE_ZH, language=LANG_ZH)
+        else:
+            response.say("Sorry, I did not catch that.", voice=VOICE_EN, language=LANG_EN)
+        response.redirect(f"/voice/qa/{lang}")
+        return Response(str(response), mimetype="text/xml")
+
+    # Get Hermes response
+    hermes_reply = ask_hermes(speech, lang)
+    print(f"[Telephony] [{lang}] Hermes reply: {hermes_reply[:120]}")
+
+    # Speak the answer
+    say(response, hermes_reply, lang)
+
+    # Loop — ask if they have another question
+    if lang == "zh":
+        follow_up = "您还有其他问题吗？请说出来。"
+        goodbye   = "感谢您拨打Victor的智能助手。再见！"
+    else:
+        follow_up = "Do you have another question? Please speak now."
+        goodbye   = "Thank you for calling Victor's Assistant. Goodbye!"
+
+    gather = listen(
+        action=f"/voice/answer/{lang}",
+        lang=lang,
+        prompt_text=follow_up,
+    )
+    response.append(gather)
+
+    # No follow-up question — say goodbye
+    say(response, goodbye, lang)
+    response.hangup()
     return Response(str(response), mimetype="text/xml")
 
 
 @app.route("/voice/status", methods=["GET", "POST"])
 def call_status():
-    """Handle call status callbacks."""
-    call_status = request.values.get("CallStatus", "unknown")
-    call_sid = request.values.get("CallSid", "unknown")
-    print(f"Call {call_sid} status: {call_status}")
+    status  = request.values.get("CallStatus", "unknown")
+    call_id = request.values.get("CallSid", "unknown")
+    print(f"[Telephony] Call {call_id}: {status}")
     return Response("OK", status=200)
 
 
 @app.route("/health")
 def health():
-    return {"status": "ok", "service": "hermes-telephony"}
+    return {"status": "ok", "service": "Victor's Assistant Telephony Agent"}
 
-
-# ── Entry Point ────────────────────────────────────────
 
 if __name__ == "__main__":
-    print("🤖 Hermes Telephony Agent starting on port 5001...")
-    print("📞 Waiting for calls...")
+    print("📞 Victor's Assistant — port 5001")
+    print("Press 1 = English | Press 2 = 中文")
     app.run(host="0.0.0.0", port=5001, debug=False)
