@@ -30,3 +30,5 @@ google_*.html
 niantic_*.html
 sf_*.html
 zoox_*.md
+.hermes-web-ui/
+snap/
