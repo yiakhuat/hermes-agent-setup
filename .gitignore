@@ -18,3 +18,15 @@ linked_list_search.c
 *.ttc
 *.zip
 *.so
+# Job search cached files
+api_*.json
+atom_*.html
+atom_*.md
+builtin_*.html
+cached_*.html
+db_*.html
+demandbase_*.html
+google_*.html
+niantic_*.html
+sf_*.html
+zoox_*.md
