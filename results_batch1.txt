@@ -1,0 +1,31 @@
+
+============================================================
+=== 1. MongoDB Staff TPM Queryable Encryption ===
+URL: https://www.builtinsf.com/job/staff-technical-program-manager-queryable-encryption/9646133
+Active: YES
+Page title: Staff Technical Program Manager, Queryable Encryption - MongoDB | Built In San Francisco
+
+============================================================
+=== 2. Affirm Staff TPM ===
+URL: https://www.builtinsf.com/job/staff-technical-program-manager/9330767
+Active: YES
+Page title: Staff Technical Program Manager - Affirm | Built In San Francisco
+
+============================================================
+=== 3. Baseten TPM Infrastructure ===
+URL: https://www.builtinsf.com/job/technical-program-manager-infrastructure/9678649
+ATS (ashby): https://jobs.ashbyhq.com/ba
+Active: NO (expired signal)
+Page title: Technical Program Manager, Infrastructure - Baseten | Built In San Francisco
+
+============================================================
+=== 4. Peregrine Technologies Sr TPM ===
+URL: https://www.builtinsf.com/job/senior-technical-program-manager/9678067
+Active: YES
+Page title: Senior Technical Program Manager - Peregrine Technologies, Inc. | Built In San Francisco
+
+============================================================
+=== 5. Anthropic TPM Inference Performance ===
+URL: https://www.builtinsf.com/job/technical-program-manager-inference-performance/8394413
+Active: YES
+Page title: Technical Program Manager, Inference Performance - Anthropic | Built In San Francisco
