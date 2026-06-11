@@ -32,3 +32,4 @@ sf_*.html
 zoox_*.md
 .hermes-web-ui/
 snap/
+mongodb_debug.html
