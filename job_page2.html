@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <title>404. Page Not Found. | Built In</title>
+    <link rel="icon" type="image/x-icon" href="https://static.builtin.com/dist/images/favicon.png">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com/">
+    <link rel="preload" href="https://static.builtin.com/dist/fonts/barlow-condensed-v12-latin-regular.woff2" as="font"
+          type="font/woff2" crossorigin>
+    <link rel="preload" href="https://static.builtin.com/dist/fonts/montserrat-v25-latin-regular.woff2" as="font"
+          type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="https://static.builtin.com/jobs/css/main.bundle.eaadad3cbc5bbfa136dd.css">
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            });
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true;
+            j.src =
+                'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-M7NGJ28');
+    </script>
+    
+</head>
+<body>
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M7NGJ28" height="0" width="0"
+            title="Google Tag Manager" style="display:none;visibility:hidden"></iframe>
+</noscript>
+    <div id="g_id_onload" data-client_id="941473408521-r82mlse6rh2ar9loff8bgnbqtbp6inrs.apps.googleusercontent.com" data-login_uri="https://accounts.builtin.com/External/OneTap" data-new_user_return_url="https://builtin.com/auth/login?destination=%2FError%3FstatusCode%3D404" data-existing_user_return_url="https://builtin.com/auth/login?destination=%2FError%3FstatusCode%3D404" data-auto_select="true" data-prompt_parent_id="g_id_onload" style="position: absolute; top: 150px; right: 410px; width: 0; height: 0; z-index: 1001"><div><script src="https://accounts.google.com/gsi/client" async defer></script></div></div>
+<header class="header sticky-top">
+        <div id="international-header" class="bg-midnight-indigo text-white nav-height d-flex align-items-center" data-site-id="9" data-external-api="https://api.builtin.com"><div class="container d-flex justify-content-between"><div class="d-flex align-items-center gap-2xl"><a href="/"><img class="d-block d-lg-none" src="https://static.builtin.com/dist/images/9-white-compact.svg" height="28" width="32" alt="Built In Logo" />
+        <img class="d-none d-lg-block" src="https://static.builtin.com/dist/images/bi-logo.svg" height="48" width="108" alt="Built In Logo" /></a><a href="/companies" class="d-none d-lg-inline fw-semibold fs-sm">Companies</a><a href="/jobs" class="d-none d-lg-inline fw-semibold fs-sm">Jobs</a><a href="/tech-topics" class="d-none d-lg-inline fw-semibold fs-sm">Articles</a></div>
+        <div class="d-flex gap-md gap-xl-xl"><div class="search" x-data="headerSearch()"><button id="header-search-dropdown" type="button" class="btn h-100 p-xs p-md-sm" data-bs-toggle="dropdown" aria-expanded="false" data-bs-offset="0,0" data-bs-auto-close="outside" aria-label="search button"><i class="fa-light fa-magnifying-glass fs-md fs-lg-2xl text-white"></i></button>
+    <div class="dropdown-menu"><div class="input-group mb-md px-md"><span class="input-group-text bg-white"><i class="fa-light fa-magnifying-glass fs-xl text-midnight"></i></span>
+            <input autofocus type="text" id="header-search-input" name="search jobs input" class="form-control border-start-0" x-model="searchTerm" x-on:input.debounce.100ms="updateCompanies()" x-on:keydown.enter="goToJobSearch" placeholder="Search"></div>
+        <div class="bg-gray-01-highlight px-md mb-md"><a :href="jobSearchUrl" x-text="searchTerm + ' In Jobs'"></a></div>
+        <template x-for="company in companies"><a :href="company.alias" class="text-decoration-none"><div class="mb-md"><div class="d-flex align-items-center bg-gray-01 mx-md rounded-1 px-md py-sm"><div class="rounded-circle bg-white h-4xl w-4xl d-flex align-items-center justify-content-center" style="flex-basis: auto"><img class="object-fit-contain" loading="lazy" width="42" height="42" alt="Company Photo" :src="company.logo"></div>
+                        <div class="ms-lg fill-even"><div x-text="company.title" class="text-midnight fw-semibold"></div>
+                            <div x-text="company.industries" class="font-montserrat-button text-uppercase fs-xs"></div></div></div></div></a></template>
+        <template x-if="searchTerm.length &gt; 0 &amp;&amp; companies.length === 0"><a class="text-decoration-none" href="/node/add/company"><div class="border border-gray-02 d-flex gap-lg p-md m-md rounded-1 align-items-center"><div class="bg-gray-01 rounded-circle h-4xl w-4xl d-flex align-items-center justify-content-center"><i class="fa-thin fa-rocket-launch fs-2xl"></i></div>
+                    <div><div class="fs-xl mb-sm text-midnight fw-semibold">Can't find your company?</div>
+                        <div class="fs-sm">Create a company profile.</div></div></div></a></template>
+        <div class="d-flex justify-content-center"><a class="d-flex align-items-center" href="/jobs">View All Jobs</a></div></div></div><div class="d-flex"><div class="my-auto d-block"><a href="/auth/signup?destination=%2fError%3fstatusCode%3d404" id="join" class="fw-semibold fs-sm special-link-electric-peri">
+                                Join
+                            </a></div>
+                        <span class="my-auto mx-ms h-md border border-white d-block"></span>
+                        <div class="my-auto"><a href="/auth/login?destination=%2fError%3fstatusCode%3d404" id="login" class="fw-semibold fs-sm special-link-electric-peri">
+                                Log In
+                            </a></div></div><div class="my-auto d-none d-lg-inline"><a id="for-employers-button" href="https://employers.builtin.com?utm_medium=BIReferral&amp;utm_source=foremployers" target="_blank" class="btn btn-outline-light text-white btn-lg fw-bold fs-sm text-uppercase" role="button" aria-disabled="true">
+                For Employers
+            </a></div></div></div></div>
+
+</header>
+<div>
+    <main role="main">
+        
+<div class="container py-5xl d-flex flex-column-reverse flex-lg-row gap-md justify-content-center align-items-center"><div class="text-center"><div><div class="text-primary fw-extrabold d-block d-lg-none" style="font-size: 6.25rem; line-height: 1">404</div>
+            <div class="text-primary fw-extrabold d-none d-lg-block" style="font-size: 12.5rem; line-height: 1">404</div>
+            <div class="fw-extrabold fs-md fs-lg-4xl">Well... this is embarrassing<span class="text-primary">.</span></div>
+            <div class="fw-bold fs-xs fs-lg-md">We can&#x27;t seem to find the page you&#x27;re looking for.</div></div>
+        <hr class="my-md my-lg-lg mx-lg-5xl">
+        <div class="d-flex flex-column flex-lg-row justify-content-between mx-5xl gap-md"><a href="/jobs" class="text-primary text-decoration-underline fw-bold">View Jobs</a>
+            <a href="/companies" class="text-primary text-decoration-underline fw-bold">Explore Companies</a>
+            <a href="/tech-topics" class="text-primary text-decoration-underline fw-bold">Read News</a></div></div>
+    <picture><img loading="lazy" class="d-block d-lg-none" width="98" height="196" src="https://static.builtin.com/dist/images/404-cat.svg" alt="Error Cat" />
+        <img loading="lazy" class="d-none d-lg-block" width="214" height="426" src="https://static.builtin.com/dist/images/404-cat.svg" alt="Error Cat" /></picture></div>
+
+    </main>
+</div>
+<div>
+    <nav class="mobile-nav d-lg-none"><ul class="position-relative d-flex h-100 p-0 list-unstyled" style="z-index: 1"><li class="fs-xs fw-bold flex-grow-1 text-center h-100"><a href="/companies" class="d-flex align-items-center justify-content-center flex-column h-100 w-100 text-black"><div class="text-center"><i class="fa-light fa-globe fs-lg text-midnight" aria-hidden="true"></i></div>
+                <div class="text-midnight">Companies</div></a></li>
+        <li class="fs-xs fw-bold flex-grow-1 text-center h-100"><a href="/jobs" class="d-flex align-items-center justify-content-center flex-column h-100 w-100 text-black"><div class="text-center"><i class="fa-light fa-laptop fs-lg text-midnight" aria-hidden="true"></i></div>
+                <div class="text-midnight">Jobs</div></a></li>
+        <li class="fs-xs fw-bold flex-grow-1 text-center h-100"><a href="/auth/login?destination=/?application-tracker#application-tracker" onclick="bix.eventTracking.logBuiltinTrackEvent(&#x27;click_nav_apptracker&#x27;, {}); bootstrap.Modal.getInstance(document.getElementById(&#x27;moreModal&#x27;)).hide();" class="d-flex align-items-center justify-content-center flex-column h-100 w-100 text-black"><div class="text-center"><i class="fa-light fa-layer-group fs-lg text-midnight" aria-hidden="true"></i></div>
+                <div class="text-midnight">Tracker</div></a></li>
+        <li class="fs-xs fw-bold flex-grow-1 text-center h-100"><a href="/tech-topics" class="d-flex align-items-center justify-content-center flex-column h-100 w-100 text-black"><div class="text-center"><i class="fa-light fa-newspaper fs-lg text-midnight" aria-hidden="true"></i></div>
+                <div class="text-midnight">Articles</div></a></li>
+        <li class="fs-xs fw-bold flex-grow-1 text-center h-100"><div class="d-flex flex-column h-100 w-100 align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#moreModal"><div class="text-center"><i class="fa-light fa-bars-staggered fs-lg text-midnight" aria-hidden="true"></i></div>
+                <div class="text-midnight">More</div></div></li></ul></nav>
+<div class="modal fade mobile-nav-dialog" id="moreModal" tabindex="-1" aria-labelledby="moreModal" aria-hidden="true"><div class="modal-dialog modal-fullscreen-lg-down"><div class="modal-content"><div class="p-md border-bottom border-black"><img src="https://static.builtin.com/dist/images/midnight_9.svg" width="72" height="32" loading="lazy" alt="Built In" class="visible" /></div>
+            <div class="p-md bg-white"><div class="d-flex border-bottom border-black pb-md gap-sm"><div class="w-100"><a href="/auth/signup?destination=%2fError%3fstatusCode%3d404" type="button" id="join" class="btn btn-lg btn-primary w-100">
+                                    Join
+                                </a></div>
+                            <div class="w-100"><a href="/auth/login?destination=%2fError%3fstatusCode%3d404" type="button" id="login" class="btn btn-lg btn-outline-primary w-100">
+                                    Log In
+                                </a></div></div><ul class="more-links position-relative list-unstyled d-flex flex-column p-0"><li><a href="/jobs" class="d-flex align-items-center text-midnight border-bottom border-black fw-bold"><div class="me-md w-lg text-center py-md px-0 fs-lg"><i class="fa-light fa-briefcase fs-lg text-midnight" aria-hidden="true"></i></div>
+                            <div class="text-center fw-bold fs-lg">Tech Jobs</div></a></li>
+                    <li><a href="/companies" class="d-flex align-items-center text-midnight border-bottom border-black fw-bold"><div class="me-md w-lg text-center py-md px-0 fs-lg"><i class="fa-light fa-rocket-launch fs-lg text-midnight" aria-hidden="true"></i></div>
+                            <div class="text-center fw-bold fs-lg">Companies</div></a></li>
+                    <li><a href="/tech-topics" class="d-flex align-items-center text-midnight border-bottom border-black fw-bold"><div class="me-md w-lg text-center py-md px-0 fs-lg"><i class="fa-light fa-newspaper fs-lg text-midnight" aria-hidden="true"></i></div>
+                            <div class="text-center fw-bold fs-lg">Articles</div></a></li>
+                    <li><a href="/jobs/remote" class="d-flex align-items-center text-midnight border-bottom border-black fw-bold"><div class="me-md w-lg text-center py-md px-0 fs-lg"><i class="fa-light fa-signal-stream fs-lg text-midnight" aria-hidden="true"></i></div>
+                            <div class="text-center fw-bold fs-lg">Remote</div></a></li><li><a href="https://builtin.com/awards/us/2026/best-places-to-work" class="d-flex align-items-center text-midnight border-bottom border-black fw-bold"><div class="me-md w-lg text-center py-md px-0 fs-lg"><i class="fa-light fa-award" aria-hidden="true"></i></div>
+                                    <div class="text-center fw-bold fs-lg">Best Places To Work</div></a></li><li><a href="/tech-hubs" class="d-flex align-items-center text-midnight border-bottom border-black fw-bold"><div class="me-md w-lg text-center py-md px-0 fs-lg"><i class="fa-light fa-location-dot" aria-hidden="true"></i></div>
+                                <div class="text-center fw-bold fs-lg">Tech Hubs</div></a></li></ul>
+                <div><a href="https://employers.builtin.com/membership?utm_medium=BIReferral&amp;utm_source=foremployers" class="btn bg-medium-blue text-white btn-lg fw-bold fs-sm text-uppercase w-100" role="button" aria-disabled="true">
+                        Post Job
+                    </a></div></div></div></div></div>
+</div>
+<footer class="footer">
+        <div class="bg-pretty-blue-highlight text-midnight-indigo py-5xl"><div class="container"><div class="row footer-content gap-lg gap-md-0 mb-lg"><div class="col-md"><div class="mb-lg"><a href="/"><img width="105px" height="47px" loading="lazy" src="https://static.builtin.com/dist/images/9-dark.svg" alt="BuiltIn" /></a></div>
+                <div class="d-flex justify-content-start fw-bold fs-xs d-block d-md-none"> © 2026 Built In. All rights reserved.</div></div>
+            <div class="col-sm-auto col-md col-lg-auto"><div id="block-about-menu" class="text-midnight-indigo mb-md font-barlow fw-medium fs-xl">About</div>
+                <nav role="navigation" aria-labelledby="block-about-menu" class="flex-column small d-flex gap-md"><div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/our-story" rel="noopener noreferrer" target="_blank">
+                            Our Story
+                        </a></div>
+                    <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://employers.builtin.com/careers/" rel="noopener noreferrer" target="_blank">
+                            Careers
+                        </a></div>
+                    <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/our-staff" rel="noopener noreferrer" target="_blank">
+                            Our Staff Writers
+                        </a></div>
+                    <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/content-descriptions" rel="noopener noreferrer" target="_blank">
+                            Content Descriptions
+                        </a></div></nav></div>
+            <div class="col-md"><div id="block-getinvolved-menu" class="text-midnight-indigo mb-md font-barlow fw-medium fs-xl">Get Involved</div>
+                <nav role="navigation" aria-labelledby="block-getinvolved-menu" class="flex-column small d-flex gap-md"><div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://employers.builtin.com/membership?utm_medium=BIReferral&amp;utm_source=foremployers" rel="noopener noreferrer" target="_blank">
+                            Recruit With Built In
+                        </a></div>
+                    <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/expert-contributors" rel="noopener noreferrer" target="_blank">
+                            Become an Expert Contributor
+                        </a></div></nav></div>
+            <div class="col-md"><div id="block-resources-menu" class="text-midnight-indigo mb-md font-barlow fw-medium fs-xl">Resources</div>
+                <nav role="navigation" aria-labelledby="block-resources-menu" class="flex-column small d-flex gap-md"><div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://knowledgebase.builtin.com/s/">
+                            Customer Support
+                        </a></div>
+                    <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://form.jotform.com/223044927257054">
+                            Share Feedback
+                        </a></div>
+                    <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://knowledgebase.builtin.com/s/contactsupport">
+                            Report a Bug
+                        </a></div><div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/articles/grow-your-career">
+                                Tech Job Tools + Career Resources
+                            </a></div>
+                        <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/browse-jobs">
+                                Browse Jobs
+                            </a></div>
+                        <div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/tech-dictionary" data-drupal-link-system-path="tech-dictionary">
+                                Tech A-Z
+                            </a></div></nav></div><div class="col-sm-auto col-md col-lg-auto"><div id="block-poweredbybuiltin-menu" class="text-midnight-indigo mb-md font-barlow fw-medium fs-xl">Tech
+                        Hubs
+                    </div>
+                    <nav role="navigation" aria-labelledby="block-poweredbybuiltin-menu" class="flex-column small d-flex gap-md"><div><a class="nav-link text-midnight-indigo fs-sm fw-regular special-link-electric-peri" href="https://builtin.com/our-sites" target="_blank" rel="noopener noreferrer">Our Sites</a></div></nav></div></div>
+        <div class="d-flex justify-content-start fw-bold fs-xs d-none d-md-block"> © 2026 Built In. All rights reserved.</div>
+        <hr class="border-medium-blue opacity-100 my-lg">
+        <div class="fs-xs mb-3xl mb-lg-0"><nav role="navigation" aria-label="Footer Bottom Navigation" class="d-flex flex-column align-items-center align-items-md-start text-center text-md-start flex-md-row justify-content-between gap-md footer-bottom-nav"><a class="nav-link text-midnight-indigo fs-xs fw-regular special-link-electric-peri" href="https://builtin.com/learning-lab-user-agreement">
+                    Learning Lab User Agreement
+                </a>
+
+                <a class="nav-link text-midnight-indigo fs-xs fw-regular special-link-electric-peri" href="https://builtin.com/accessibility-statement">
+                    Accessibility Statement
+                </a>
+                <a class="nav-link text-midnight-indigo fs-xs fw-regular special-link-electric-peri" href="https://builtin.com/copyright-policy">
+                    Copyright Policy
+                </a>
+                <a class="nav-link text-midnight-indigo fs-xs fw-regular special-link-electric-peri" href="https://builtin.com/privacy-policy">
+                    Privacy Policy
+                </a>
+                <a class="nav-link text-midnight-indigo fs-xs fw-regular special-link-electric-peri" href="https://builtin.com/community-terms-of-use">
+                    Terms of Use
+                </a>
+                <a class="nav-link text-midnight-indigo fs-xs fw-regular do-not-sell-my-info special-link-electric-peri" href="https://builtin.com/california-do-not-sell-my-information">
+                    Your Privacy Choices/Cookie Settings
+                </a>
+                <a class="nav-link text-midnight-indigo fs-xs fw-regular special-link-electric-peri" href="https://builtin.com/ca-notice-collection">
+                    CA Notice of Collection
+                </a></nav></div></div></div>
+
+</footer>
+
+<script src="https://kit.fontawesome.com/e1bbd40aec.js" crossorigin="anonymous"></script>
+<script src="https://static.builtin.com/dist/js/common.bundle.js"></script>
+<script src="https://static.builtin.com/jobs/js/main.bundle.d73e9bb2c8f439cbf4dd.js"></script>
+
+<script type="text/javascript">
+    (function (w) {
+        w.bix.eventTracking.init({
+            trackingBaseUrl: 'https://api.builtin.com',
+            trackingEventEndpoint: '/track/client-events',
+            trackingIdentityEndpoint: '/track/identity',
+            SubjectId: '',
+            UserId: '',
+            DrupalUserId: '',
+            siteId: 9
+        });
+    })(window);
+</script>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        Alpine.start();
+    });
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a22de06e6d549f2f',t:'MTc4NTM0NjQ5MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
