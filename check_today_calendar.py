@@ -1,58 +1,59 @@
-#!/usr/bin/env python3
-"""Check today's events on iCloud Calendar."""
-import os, sys
+import os
 from datetime import datetime, timedelta
 import caldav
+import yaml
+from pathlib import Path
 
-# Set credentials from config
-os.environ["ICLOUD_EMAIL"] = "yiakhuat@icloud.com"
-os.environ["ICLOUD_PASSWORD"] = "zrmn-mkmu-sbty-bwle"
+config = yaml.safe_load(Path('/root/.hermes/config.yaml').read_text())
+env = config['mcp_servers']['icloud-calendar']['env']
 
 client = caldav.DAVClient(
-    url="https://caldav.icloud.com",
-    username=os.environ["ICLOUD_EMAIL"],
-    password=os.environ["ICLOUD_PASSWORD"],
-    timeout=20
+    url='https://caldav.icloud.com',
+    username=env['ICLOUD_EMAIL'],
+    password=env['ICLOUD_PASSWORD'],
+    timeout=20,
 )
-
 principal = client.principal()
-calendars = principal.calendars()
 
-today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-tomorrow = today + timedelta(days=1)
+# Today's boundaries (local time)
+now = datetime.now()
+start = datetime(now.year, now.month, now.day, 0, 0, 0)
+end = start + timedelta(days=1)
 
-print(f"Today: {today.date()}")
-print(f"Checking period: {today} to {tomorrow}")
-print("-" * 70)
-
-found = False
-for cal in calendars:
+results = []
+for cal in principal.calendars():
     try:
         cal_name = cal.get_display_name()
         if cal_name == "Reminders":
             continue
-        events = cal.date_search(start=today, end=tomorrow, expand=True)
+        events = cal.date_search(start=start, end=end, expand=True)
         for event in events:
             try:
                 v = event.vobject_instance.vevent
                 summary = str(v.summary.value) if hasattr(v, 'summary') else 'No title'
-                dtstart = str(v.dtstart.value) if hasattr(v, 'dtstart') else 'Unknown'
-                dtend = str(v.dtend.value) if hasattr(v, 'dtend') else ''
+                dtstart = v.dtstart.value
+                dtend = v.dtend.value if hasattr(v, 'dtend') else None
+                all_day = not hasattr(dtstart, 'hour') or (hasattr(dtstart, 'hour') and not hasattr(v, 'dtstart').__class__ and False)
+                # detect all-day (date without time)
+                is_date = not hasattr(dtstart, 'hour')
                 uid = str(v.uid.value) if hasattr(v, 'uid') else ''
-                print(f"EVENT: {summary}")
-                print(f"  Start: {dtstart}")
-                print(f"  End:   {dtend}")
-                print(f"  Cal:   {cal_name}")
-                print(f"  UID:   {uid}")
-                print("-" * 70)
-                found = True
-            except Exception as e:
+                results.append({
+                    'summary': summary,
+                    'dtstart': str(dtstart),
+                    'dtend': str(dtend) if dtend else '',
+                    'calendar': cal_name,
+                    'uid': uid,
+                    'all_day': is_date,
+                })
+            except Exception:
                 pass
-    except Exception as e:
-        print(f"Error with calendar: {e}")
+    except Exception:
+        pass
 
-if not found:
-    print("NO_EVENTS_FOUND")
+# Sort by start time
+results.sort(key=lambda r: r['dtstart'])
 
-print("=" * 70)
-print(f"Calendar check complete at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"TODAY={now.strftime('%Y-%m-%d %A')}")
+print(f"COUNT={len(results)}")
+for r in results:
+    print(f"EVENT|{r['summary']}|{r['dtstart']}|{r['dtend']}|{r['calendar']}|allday={r['all_day']}|UID={r['uid']}")
